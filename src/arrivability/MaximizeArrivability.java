@@ -65,47 +65,49 @@ public class MaximizeArrivability {
 	 * Use Astar algorithm to find an optimal solution
 	 * @return
 	 */
-	public Collection<Path<Point>> getSolution() {
+	public Collection<Path<Point>> getSolution(int maxUnion) {
 		long startTime = System.nanoTime();
 		Queue<SearchNode> queue = new PriorityQueue<>();
-		Path<Point> path = new Path<>();
-		path.addVertex(source);
-		double heuristic = model.heuristic(Arrays.asList(path, path), target);
-		double cost = 1 - model.computeArrivability(path);
-		queue.offer(new SearchNode(source, source, cost, heuristic, null));
-		List<Path<Point>> solution = Arrays.asList(null, null);
 		Path<Point> path1 = new Path<>();
 	    Path<Point> path2 = new Path<>();
+	    path1.addVertex(source);
+	    path2.addVertex(source);
 		List<Path<Point>> paths = Arrays.asList(path1, path2);
-		double currentCost = Double.POSITIVE_INFINITY;
+		List<Point> ends = Arrays.asList(source, source);
+		double heuristic = model.heuristic(paths, ends, target);
+		if (!Double.isFinite(heuristic))
+			return null;
+		double cost = 1 - model.computeArrivability(paths);
+		queue.offer(new SearchNode(source, source, cost, heuristic, null));
+		List<Path<Point>> solution = Arrays.asList(null, null);
+		int count = 0;
     	while (!queue.isEmpty()) {
+    		count++;
     	    SearchNode node = queue.poll();
-    	    if (node.getCost() >= currentCost)
-    	    	continue;
     	    //System.out.println("Delete a node " + node.toString());
     	    getPaths(node, paths);
     	    //System.out.println("Paths are " + paths.get(0).toString() + '\n');
     	    //System.out.println(paths.get(1).toString());
-    	    Point end1 = node.getEnd1(), end2 = node.getEnd2();
-    	    if (target.equals(end1) && target.equals(end2)) {
+    	    ends.set(0, node.getEnd1());
+    	    ends.set(1, node.getEnd2());
+    	    if (target.equals(ends.get(0)) && target.equals(ends.get(1))) {
     	    	solution.set(0, path1.duplicate());
     	    	solution.set(1, path2.duplicate());
-    	    	currentCost = node.getCost();
-    	    	System.out.println("Current arrivability is " + (1 - currentCost));
+    	    	cost = node.getCost();
     	    	break;
     	    }
-    	    if (!target.equals(end1) && !target.equals(end2)) {
-    	    	for (Point neighbor1 : model.getNeighbors(end1)) {
+    	    if (!target.equals(ends.get(0)) && !target.equals(ends.get(1))) {
+    	    	for (Point neighbor1 : model.getNeighbors(ends.get(0))) {
     	    		if (path1.contains(neighbor1))
     	    			continue;
     	    		path1.addVertex(neighbor1);
-    	    		for (Point neighbor2 : model.getNeighbors(end2)) {
+    	    		for (Point neighbor2 : model.getNeighbors(ends.get(1))) {
     	    			if (path2.contains(neighbor2))
     	    				continue;
     	    			path2.addVertex(neighbor2);
-    	    			heuristic = model.heuristic(paths, target);
-    	    			cost = 1 - model.computeArrivability(paths);
-    	    			if (cost + heuristic < currentCost) {
+    	    			heuristic = model.heuristic(paths, ends, target);
+    	    			if (Double.isFinite(heuristic)) {
+    	    				cost = 1 - model.computeArrivability(paths);
     	    				SearchNode newNode = new SearchNode(neighbor1, neighbor2, cost, heuristic, node);
     	    				queue.offer(newNode);
     	    			}
@@ -113,28 +115,28 @@ public class MaximizeArrivability {
     	    		}
     	    		path1.undo();
     	    	}
-    	    } else if (target.equals(end1)) {
-	    		for (Point neighbor2 : model.getNeighbors(end2)) {
+    	    } else if (target.equals(ends.get(0))) {
+	    		for (Point neighbor2 : model.getNeighbors(ends.get(1))) {
 	    			if (path2.contains(neighbor2))
 	    				continue;
 	    			path2.addVertex(neighbor2);
-	    			heuristic = model.heuristic(paths, target);
-	    			cost = 1 - model.computeArrivability(paths);
-	    			if (cost + heuristic < currentCost) {
-	    				SearchNode newNode = new SearchNode(end1, neighbor2, cost, heuristic, node);
+	    			heuristic = model.heuristic(paths, ends, target);
+	    			if (Double.isFinite(heuristic)) {
+	    				cost = 1 - model.computeArrivability(paths);
+	    				SearchNode newNode = new SearchNode(ends.get(0), neighbor2, cost, heuristic, node);
 	    				queue.offer(newNode);
 	    			}
 	    			path2.undo();
 	    		}
     	    } else {
-    	    	for (Point neighbor1 : model.getNeighbors(end1)) {
+    	    	for (Point neighbor1 : model.getNeighbors(ends.get(0))) {
 	    			if (path1.contains(neighbor1))
 	    				continue;
 	    			path1.addVertex(neighbor1);
-	    			heuristic = model.heuristic(paths, target);
-	    			cost = 1 - model.computeArrivability(paths);
-	    			if (cost + heuristic < currentCost) {
-	    				SearchNode newNode = new SearchNode(neighbor1, end2, cost, heuristic, node);
+	    			heuristic = model.heuristic(paths, ends, target);
+	    			if (Double.isFinite(heuristic)) {
+	    				cost = 1 - model.computeArrivability(paths);
+	    				SearchNode newNode = new SearchNode(neighbor1, ends.get(1), cost, heuristic, node);
 	    				queue.offer(newNode);
 	    			}
 	    			path1.undo();
@@ -143,11 +145,12 @@ public class MaximizeArrivability {
         }
     	long endTime = System.nanoTime();
     	long duration = (endTime - startTime) / 1000000;
-    	System.out.println("Best arrivability is: " + (1 - currentCost) + " time is: " + duration);
+    	System.out.println("Best arrivability is: " + (1 - cost) + " time is: " + duration + " iterations is " + count);
+    	System.out.println("Maximum union bound is " + maxUnion + " actual union size is " + model.forbiddenArea(solution).size());
 		return solution;
 	}
 	
-	private class SearchNode implements Comparable<SearchNode>{
+	private static final class SearchNode implements Comparable<SearchNode> {
 		private Point end1;
 		private Point end2;
 		private double cost;
@@ -207,7 +210,6 @@ public class MaximizeArrivability {
 	 * @return
 	 */
 	private static List<Path<Point>> getPaths(SearchNode node, List<Path<Point>> paths) {
-		List<List<Integer>> list = new ArrayList<>();
 		Deque<Point> stack1 = new ArrayDeque<>();
 		Deque<Point> stack2 = new ArrayDeque<>();
 		Point previousEnd1 = null, previousEnd2 = null;

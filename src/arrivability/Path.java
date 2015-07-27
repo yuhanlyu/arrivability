@@ -28,7 +28,7 @@ public class Path<V> implements Iterable<V> {
 	
 	/**
 	 * Append a vertex to the end
-	 * @param vertex
+	 * @param vertex a vertex
 	 */
 	public void addVertex(V vertex) {
 		path.add(vertex);
@@ -47,7 +47,8 @@ public class Path<V> implements Iterable<V> {
 	
 	/**
 	 * Test whether path contains a vertex 
-	 * @param vertex
+	 * @param vertex a vertex
+	 * @return true if path contains vertex, false otherwise
 	 */
 	public boolean contains(V vertex) {
 		return path.contains(vertex);
@@ -55,7 +56,7 @@ public class Path<V> implements Iterable<V> {
 	
 	/**
 	 * Return a collection containing all elements in path
-	 * @return
+	 * @return a collection containing all elements in path
 	 */
 	public Collection<V> toCollection() {
 		return path;
@@ -63,12 +64,15 @@ public class Path<V> implements Iterable<V> {
 	
 	/**
 	 * Duplicate the current path
-	 * @return
+	 * @return a duplicated path
 	 */
 	public Path<V> duplicate() {
 		return new Path<>(path);
 	}
 	
+	/**
+	 * Clear all information
+	 */
 	public void clear() {
 		path.clear();
 		last = null;

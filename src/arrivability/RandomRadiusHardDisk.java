@@ -56,16 +56,4 @@ public class RandomRadiusHardDisk extends Arrivability {
 			//System.out.println(model.computeArrivability(model.generateKPaths(source, target, i)));
 		}
 	}
-
-	@Override
-	protected Collection<Point> forbiddenArea(Iterable<Point> vertexset) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public double heuristic(List<Path<Point>> vertexset, Point target) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

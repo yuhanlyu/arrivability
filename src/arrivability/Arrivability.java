@@ -7,19 +7,67 @@ import java.util.List;
 
 public abstract class Arrivability {
 	
-	protected Graph<Point> g;
+	protected OldGraph<Point> g;
 	
 	abstract protected double arrivability(Iterable<Point> vertexset);
 	
-	abstract protected Collection<Point> forbiddenArea(Iterable<Point> vertexset);
+	protected Collection<Point> forbiddenArea(Iterable<Point> vertexset) {
+		return null;
+	}
 	
-	abstract public double heuristic(List<Path<Point>> vertexset, Point target);
+	protected Collection<Point> forbiddenArea(List<Path<Point>> vertexsets) {
+		Collection<Point> vertexset = new HashSet<>();
+		for (Path<Point> path: vertexsets)
+			vertexset.addAll(path.toCollection());
+		return forbiddenArea(vertexset);
+	}
+	
+	/**
+	 * Analyze vertexset
+	 * @param vertexset
+	 * @param ends
+	 * @return result[0] is the size of overlapped forbidden area
+	 *         result[1] is the size of exclusive forbidden area for the first path (
+	 *         result[2] is the size of exclusive forbidden area for the second path
+	 *         result[3] is the minimum distance from the first path to the target
+	 *         result[4] is the minimum distance from the second path to the target
+	 *         result[5] is the minimum distance from the first path to the second path
+	 *         result[6] is the minimum distance from the second path to the first path
+	 */
+	public double[] analyze(List<Path<Point>> paths, List<Point> ends, Point target) {
+		return null;
+	}
+	
+	/**
+	 * Compute the lower bound of failure probability from vertex set to target
+	 * @param vertexset
+	 * @param ends
+	 * @param target
+	 * @return
+	 */
+	public double failureLB(List<Path<Point>> paths, List<Point> ends, Point target) {
+		return 0.0; 
+	}
+	
+	/**
+	 * Compute the minimum additional failure probability from paths to target
+	 * @param paths
+	 * @param ends
+	 * @param target
+	 * @return minimum additional failure probability from paths to target
+	 *         if it is not possible from paths to target, return Double.POSITIVE_INFINITY
+	 */
+	public double heuristic(List<Path<Point>> paths, List<Point> ends, Point target) {
+		double result = failureLB(paths, ends, target) - (1 - computeArrivability(paths));
+		assert(result > 0.0 || Math.abs(result) < 1e-7);
+		return result;
+	}
 	
 	/**
 	 * 
 	 */
 	public Arrivability() {
-		g = new Graph<>();
+		g = new OldGraph<>();
 	}
 	
 	/**
@@ -28,7 +76,7 @@ public abstract class Arrivability {
 	 * @param m
 	 */
 	public Arrivability(int n, int m) {
-		g = new GridGraph(n, m);
+		//g = new GridGraph(n, m);
 	}
 	
 	/**

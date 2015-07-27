@@ -1,59 +1,59 @@
 package arrivability;
 
+import java.awt.geom.Point2D;
+
 /**
  * 2D grid point
  * @author yuhanlyu
  *
  */
-public final class Point implements Comparable<Point>{
+public final class Point implements Comparable<Point> {
 	
-	private int row, column;
+	private Point2D.Double point;
 	
 	/**
 	 * Constructor
-	 * @param r
-	 * @param c
+	 * @param x x-coordinate
+	 * @param y y-coordinate
 	 */
-	public Point(int r, int c) {
-		row = r;
-		column = c;
+	public Point(double x, double y) {
+		point = new Point2D.Double(x, y);
 	}
 	
 	/**
-	 * Return the row
-	 * @return
+	 * Return the y-coordinate
+	 * @return y-coordinate
 	 */
-	public int getRow() {
-		return row;
+	public double getY() {
+		return point.getY();
 	}
 	
 	/**
-	 * Return the column
-	 * @return
+	 * Return the x-coordinate
+	 * @return x-coordinate
 	 */
-	public int getColumn() {
-		return column;
+	public double getX() {
+		return point.getX();
 	}
 	
 	@Override
 	public int compareTo(Point rhs) {
-		int compareRow = Integer.compare(row, rhs.getRow());
-		return compareRow == 0 ? Integer.compare(column, rhs.getColumn()) : compareRow;
+		int compareRow = Double.compare(getY(), rhs.getY());
+		return compareRow == 0 ? Double.compare(getX(), rhs.getX()) : compareRow;
 	}
 	
 	@Override
 	public String toString() {
-		return "(" + row + " " + column + ")";
+		return "(" + getX() + " " + getY() + ")";
 	}
 	
 	@Override
 	public int hashCode() {
-		return row * (1 << 16) + column;
+		return point.hashCode();
 	}
 	
 	@Override
 	public boolean equals(Object rhs) {
-		Point point = (Point)rhs;
-		return row == point.getRow() && column == point.getColumn();
+		return point.equals(((Point)rhs).point);
 	}
 }

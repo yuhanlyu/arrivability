@@ -15,8 +15,8 @@ public class GridGraph extends Graph<Point> {
 		numberOfColumns = m;
 		
 		// Initialize vertices
-		for (int i = 0; i < n; ++i) {
-			for (int j = 0; j < m; ++j) {
+		for (int i = 0; i < numberOfRows; ++i) {
+			for (int j = 0; j < numberOfColumns; ++j) {
 				addVertex(new Point(i, j));
 			}
 		}

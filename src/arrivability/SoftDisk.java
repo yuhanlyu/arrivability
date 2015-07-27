@@ -15,17 +15,4 @@ public class SoftDisk extends Arrivability {
 		// TODO Auto-generated method stub
 		return 0;
 	}
-
-	@Override
-	protected Collection<Point> forbiddenArea(Iterable<Point> vertexset) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public double heuristic(List<Path<Point>> vertexset, Point target) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 }
