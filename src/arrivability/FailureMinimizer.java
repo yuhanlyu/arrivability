@@ -100,10 +100,12 @@ public class FailureMinimizer {
 	private Collection<SearchNode> successors(SearchNode node) {
 		List<SearchNode> result = new ArrayList<>();
 		List<Path<Point>> oldPaths = getPaths(node);
+		List<Collection<Point>> oldAreas = model.forbiddenAreas(oldPaths);
 		List<List<Point>> newEnds = extendEnds(oldPaths, node.getEnds());
 		for (List<Point> ends : newEnds) {
 			List<Path<Point>> paths = clonePaths(oldPaths);
-			List<Collection<Point>> forbiddenAreas = cloneAreas(node.getForbiddenAreas());
+			//List<Collection<Point>> forbiddenAreas = cloneAreas(node.getForbiddenAreas());
+			List<Collection<Point>> forbiddenAreas = cloneAreas(oldAreas);
 			attachEnds(paths, ends, forbiddenAreas);
 			SearchNode newNode = createNode(node, paths, ends, forbiddenAreas);
 			result.add(newNode);
@@ -185,7 +187,7 @@ public class FailureMinimizer {
 		assert(paths.size() == ends.size());
 		for (int i = 0; i < paths.size(); ++i) {
 			paths.get(i).addVertex(ends.get(i));
-			forbiddenArea.get(i).addAll(model.getNeighbors(ends.get(i)));
+			forbiddenArea.get(i).addAll(model.getForbiddenArea(ends.get(i)));
 		}
 	}
 	
@@ -246,7 +248,7 @@ public class FailureMinimizer {
 		double failureRate = model.failureRateFromForbidden(forbiddenAreas);
 		double failureRateLB = model.failureRateLB(paths, ends, forbiddenAreas, target);
 		double heuristic = failureRateLB >= failureRate ? failureRateLB - failureRate: 0.0;
-		return new SearchNode(parent, failureRate, 0 * heuristic, ends, forbiddenAreas);
+		return new SearchNode(parent, failureRate, heuristic, ends, forbiddenAreas);
 	}
 	
 	/**
@@ -259,7 +261,7 @@ public class FailureMinimizer {
 		private final double cost;                             // failure rate so far
 		private final double heuristic;                        // lower bound of the failure rate needed to reach the goal
 		private final List<Point> ends;                        // end points of paths
-		private final List<Collection<Point>> forbiddenAreas;  // forbidden areas for each path
+		//private final List<Collection<Point>> forbiddenAreas;  // forbidden areas for each path
 		
 		/**
 		 * Constructor
@@ -276,7 +278,7 @@ public class FailureMinimizer {
 			cost = arg_cost;
 			heuristic = arg_heuristic;
 			ends = arg_ends;
-			forbiddenAreas = arg_forbiddenAreas;
+			//forbiddenAreas = arg_forbiddenAreas;
 		}
 				
 		/**
@@ -291,9 +293,9 @@ public class FailureMinimizer {
 		 * Get all forbidden areas
 		 * @return all forbidden areas
 		 */
-		public List<Collection<Point>> getForbiddenAreas() {
-			return forbiddenAreas;
-		}
+		//public List<Collection<Point>> getForbiddenAreas() {
+		//	return forbiddenAreas;
+		//}
 		
 		/**
 		 * Get the index-th end
