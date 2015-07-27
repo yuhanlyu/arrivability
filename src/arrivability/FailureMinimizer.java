@@ -82,9 +82,6 @@ public class FailureMinimizer {
 			logger.fine("Dequeue a node " + node.toString());
 			if (isTarget(node)) {
 				logger.info("A* finished with " + count + " iterations");
-				//System.out.println(node.getPath(0));
-				//System.out.println(getPaths(node).get(0));
-				//return node.getPaths();
 				return getPaths(node);
 			}
 			for (SearchNode successor : successors(node)) {
@@ -102,11 +99,9 @@ public class FailureMinimizer {
 	 */
 	private Collection<SearchNode> successors(SearchNode node) {
 		List<SearchNode> result = new ArrayList<>();
-		//List<List<Point>> newEnds = extendEnds(node.getPaths(), node.getEnds());
 		List<Path<Point>> oldPaths = getPaths(node);
 		List<List<Point>> newEnds = extendEnds(oldPaths, node.getEnds());
 		for (List<Point> ends : newEnds) {
-			//List<Path<Point>> paths = clonePaths(node.getPaths());
 			List<Path<Point>> paths = clonePaths(oldPaths);
 			List<Collection<Point>> forbiddenAreas = cloneAreas(node.getForbiddenAreas());
 			attachEnds(paths, ends, forbiddenAreas);
@@ -251,8 +246,7 @@ public class FailureMinimizer {
 		double failureRate = model.failureRateFromForbidden(forbiddenAreas);
 		double failureRateLB = model.failureRateLB(paths, ends, forbiddenAreas, target);
 		double heuristic = failureRateLB >= failureRate ? failureRateLB - failureRate: 0.0;
-		return new SearchNode(parent, failureRate, heuristic,
-				              paths, ends, forbiddenAreas);
+		return new SearchNode(parent, failureRate, 0 * heuristic, ends, forbiddenAreas);
 	}
 	
 	/**
@@ -265,7 +259,6 @@ public class FailureMinimizer {
 		private final double cost;                             // failure rate so far
 		private final double heuristic;                        // lower bound of the failure rate needed to reach the goal
 		private final List<Point> ends;                        // end points of paths
-		//private final List<Path<Point>> paths;                 // all paths
 		private final List<Collection<Point>> forbiddenAreas;  // forbidden areas for each path
 		
 		/**
@@ -278,23 +271,14 @@ public class FailureMinimizer {
 		 * @param arg_forbiddenAreas forbidden areas for each path
 		 */
 		public SearchNode(SearchNode arg_parent, double arg_cost, double arg_heuristic, 
-				          List<Path<Point>> arg_paths, List<Point> arg_ends, List<Collection<Point>> arg_forbiddenAreas) {
+				          List<Point> arg_ends, List<Collection<Point>> arg_forbiddenAreas) {
 			parent = arg_parent;
 			cost = arg_cost;
 			heuristic = arg_heuristic;
 			ends = arg_ends;
-			//paths = arg_paths;
 			forbiddenAreas = arg_forbiddenAreas;
 		}
-		
-		/**
-		 * Get all paths
-		 * @return all paths
-		 */
-		//public List<Path<Point>> getPaths() {
-		//	return paths;
-		//}
-		
+				
 		/**
 		 * Get all ends
 		 * @return all ends
@@ -310,15 +294,6 @@ public class FailureMinimizer {
 		public List<Collection<Point>> getForbiddenAreas() {
 			return forbiddenAreas;
 		}
-		
-		/**
-		 * Get the index-th path
-		 * @param index the index of the path
-		 * @return the index-th path
-		 */
-		//public Path<Point> getPath(int index) {
-		//	return paths.get(index);
-		//}
 		
 		/**
 		 * Get the index-th end
@@ -365,8 +340,7 @@ public class FailureMinimizer {
 		
 		@Override
 		public String toString() {
-			return //"Path1 is " + getPaths(this).get(0).toString() + " path2 is " + paths.get(1).toString() + " cost is " + cost + 
-					" heuristic is " + heuristic + 
+			return  " heuristic is " + heuristic + 
 					" priority is " + (cost + heuristic);
 		}
 	}
