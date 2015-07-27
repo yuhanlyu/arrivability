@@ -1,9 +1,11 @@
 package arrivability;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -80,6 +82,8 @@ public class FailureMinimizer {
 			logger.fine("Dequeue a node " + node.toString());
 			if (isTarget(node)) {
 				logger.info("A* finished with " + count + " iterations");
+				System.out.println(node.getPath(0));
+				System.out.println(getPaths(node).get(0));
 				return node.getPaths();
 			}
 			for (SearchNode successor : successors(node)) {
@@ -243,8 +247,6 @@ public class FailureMinimizer {
 		double failureRate = model.failureRateFromForbidden(forbiddenAreas);
 		double failureRateLB = model.failureRateLB(paths, ends, forbiddenAreas, target);
 		double heuristic = failureRateLB >= failureRate ? failureRateLB - failureRate: 0.0;
-		//if (heuristic == 0.0)
-		//	System.out.println(failureRateLB + " " + failureRate);
 		return new SearchNode(parent, failureRate, 0 * heuristic,
 				              paths, ends, forbiddenAreas);
 	}
@@ -387,5 +389,42 @@ public class FailureMinimizer {
 		for (int i = 0; i < forbiddenAreas.size(); ++i)
 			duplicates[i] = new HashSet<>(forbiddenAreas.get(i));
 		return Arrays.asList(duplicates);
+	}
+	
+	/**
+	 * Build paths from a search node
+	 * @param node a search node
+	 * @return a set of paths
+	 */
+	private List<Path<Point>> getPaths(SearchNode node) {
+		Deque<Point>[] stacks = new ArrayDeque[numberOfRobots];
+		Point[] previousEnds = new Point[numberOfRobots];
+		// Initialize stacks
+		for (int i = 0; i < numberOfRobots; ++i) {
+			stacks[i] = new ArrayDeque<>();
+		}
+		// Traceback
+    	for(SearchNode current = node; current != null; current = current.getParent()) {
+    		for (int i = 0; i < numberOfRobots; ++i) {
+    			Point point = current.getEnd(i);
+    			if (previousEnds[i] == null || ! previousEnds[i].equals(point)) {
+    				stacks[i].push(point);
+        			previousEnds[i] = point;
+    			}
+    		}
+    	}
+
+    	// Initialize paths
+    	Path<Point>[] paths = new Path[numberOfRobots];
+    	for (int i = 0; i < numberOfRobots; ++i) {
+			paths[i] = new Path<>();
+		}
+    	// Put nodes		
+    	for (int i = 0; i < paths.length; ++i) {
+    		while (!stacks[i].isEmpty()) {
+    			paths[i].addVertex(stacks[i].pop());
+    		}
+    	}
+    	return Arrays.asList(paths);
 	}
 }
