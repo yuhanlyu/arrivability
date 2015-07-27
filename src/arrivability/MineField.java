@@ -226,7 +226,9 @@ public class MineField extends Application {
     // For 6 * 6, Best arrivability is: 0.7420112883549137 time is: 169866 iterations is 515043 Maximum union bound is 30 actual union size is 30
     // For 7 * 7, Best arrivability is: 0.7722741152276762 time is: 400337 iterations is 678638 Maximum union bound is 35 actual union size is 35
     // Best arrivability is: 0.7722741152276762 time is: 1020738 iterations is 1746975 Maximum union bound is 37 actual union size is 35
-    // 0.6566887634624909 time is: 210444
-    // 0.6566887634624909 time is: 60962
-
+    // 0.5665413355469848 time is: 15346
+    // 0.5665413355469848 time is: 6388
+    // 0.6652720919613734 time is: 347942
+    // 0.6652720919613734 time is: 78884
+    // For 7 * 7 0.7356914732051443 time is: 2217590
 }

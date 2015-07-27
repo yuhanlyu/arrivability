@@ -104,7 +104,6 @@ public class FailureMinimizer {
 		List<List<Point>> newEnds = extendEnds(oldPaths, node.getEnds());
 		for (List<Point> ends : newEnds) {
 			List<Path<Point>> paths = clonePaths(oldPaths);
-			//List<Collection<Point>> forbiddenAreas = cloneAreas(node.getForbiddenAreas());
 			List<Collection<Point>> forbiddenAreas = cloneAreas(oldAreas);
 			attachEnds(paths, ends, forbiddenAreas);
 			SearchNode newNode = createNode(node, paths, ends, forbiddenAreas);
@@ -261,7 +260,6 @@ public class FailureMinimizer {
 		private final double cost;                             // failure rate so far
 		private final double heuristic;                        // lower bound of the failure rate needed to reach the goal
 		private final List<Point> ends;                        // end points of paths
-		//private final List<Collection<Point>> forbiddenAreas;  // forbidden areas for each path
 		
 		/**
 		 * Constructor
@@ -278,7 +276,6 @@ public class FailureMinimizer {
 			cost = arg_cost;
 			heuristic = arg_heuristic;
 			ends = arg_ends;
-			//forbiddenAreas = arg_forbiddenAreas;
 		}
 				
 		/**
@@ -289,13 +286,6 @@ public class FailureMinimizer {
 			return ends;
 		}
 		
-		/**
-		 * Get all forbidden areas
-		 * @return all forbidden areas
-		 */
-		//public List<Collection<Point>> getForbiddenAreas() {
-		//	return forbiddenAreas;
-		//}
 		
 		/**
 		 * Get the index-th end

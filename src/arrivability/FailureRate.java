@@ -1,5 +1,6 @@
 package arrivability;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,6 +64,45 @@ public class FailureRate {
 	}
 	
 	/**
+     * Compute the forbidden area for a vertex set
+     * @param vertexset a set of vertices
+     * @return forbidden are for the vertex set
+     */
+    public Collection<Point> forbiddenArea(Iterable<Point> vertexset) {
+    	HashSet<Point> result = new HashSet<>();
+    	for (Point vertex : vertexset) {
+    		result.addAll(fg.getForbiddenArea(vertex));
+    		result.add(vertex);
+    	}
+    	return result;
+    }
+    
+    /**
+     * Compute the forbidden area for a set of paths
+     * @param paths a set of paths
+     * @return forbidden area for the paths
+     */
+    public Collection<Point> forbiddenArea(List<Path<Point>> paths) {
+		Collection<Point> vertexset = new HashSet<>();
+		for (Path<Point> path: paths)
+			vertexset.addAll(path.toCollection());
+		return forbiddenArea(vertexset);
+	}
+
+    /**
+     * Compute the forbidden areas for a list of paths
+     * @param paths a list of paths
+     * @return forbidden areas for the paths
+     */
+    public List<Collection<Point>> forbiddenAreas(List<Path<Point>> paths) {
+    	Collection<Point>[] forbiddenAreas = new Collection[paths.size()];
+		for (int i = 0; i < paths.size(); ++i) {
+			forbiddenAreas[i] = forbiddenArea(paths.get(i));
+		}
+    	return Arrays.asList(forbiddenAreas);
+    }
+	
+	/**
 	 * Compute the failure rate for a list of forbidden areas
 	 * @param forbiddenArea a list of forbidden areas
 	 * @return failure rate
@@ -115,45 +155,6 @@ public class FailureRate {
 	public double arrivabilityFromForbidden(Collection<Point> forbiddenArea) {
 		return Math.pow(successProbability, forbiddenArea.size());
 	}
-	
-	/**
-     * Compute the forbidden area for a vertex set
-     * @param vertexset a set of vertices
-     * @return forbidden are for the vertex set
-     */
-    public Collection<Point> forbiddenArea(Iterable<Point> vertexset) {
-    	HashSet<Point> result = new HashSet<>();
-    	for (Point vertex : vertexset) {
-    		result.addAll(fg.getForbiddenArea(vertex));
-    		result.add(vertex);
-    	}
-    	return result;
-    }
-    
-    /**
-     * Compute the forbidden area for a set of paths
-     * @param paths a set of paths
-     * @return forbidden area for the paths
-     */
-    public Collection<Point> forbiddenArea(List<Path<Point>> paths) {
-		Collection<Point> vertexset = new HashSet<>();
-		for (Path<Point> path: paths)
-			vertexset.addAll(path.toCollection());
-		return forbiddenArea(vertexset);
-	}
-
-    /**
-     * Compute the forbidden areas for a list of paths
-     * @param paths a list of paths
-     * @return forbidden areas for the paths
-     */
-    public List<Collection<Point>> forbiddenAreas(List<Path<Point>> paths) {
-    	Collection<Point>[] forbiddenAreas = new Collection[paths.size()];
-		for (int i = 0; i < paths.size(); ++i) {
-			forbiddenAreas[i] = forbiddenArea(paths.get(i));
-		}
-    	return Arrays.asList(forbiddenAreas);
-    }
     
     /**
 	 * Compute the arrivability of a set of paths
@@ -254,24 +255,20 @@ public class FailureRate {
 			weight.put(point, Double.POSITIVE_INFINITY);
 		}
 		weight.put(end, 0.0);
+		List<Point> work = new ArrayList<>();
 		for (Point point : fg.vertexSet()) {
 			if (!forbiddenArea.contains(point)) {
+				work.clear();
 				// If point is a fake boundary, then don't share it failure to itself
-				int count = isFake(point) ? 0 : 1;
+				if (!isFake(point))
+					work.add(point);
 				for (Point neighbor : fg.getForbiddenArea(point)) {
 					// Only share
 					if (!path.contains(neighbor) && !isFake(neighbor))
-						++count;
+						work.add(neighbor);
 				}
-				if (count == 0) 
-					continue;
-				if (g.vertexSet().contains(point))
-					weight.put(point, weight.get(point) + 1.0 / count);
-				for (Point neighbor : fg.getForbiddenArea(point)) {
-					if (!path.contains(neighbor) && !isFake(neighbor)) {
-						weight.put(neighbor, weight.get(neighbor) + 1.0 / count);
-					}
-				}
+				for (Point freeNeighbor : work)
+					weight.put(freeNeighbor, weight.get(freeNeighbor) + 1.0 / work.size());
 			}
 		}
 		return weight;

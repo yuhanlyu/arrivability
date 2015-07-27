@@ -177,46 +177,63 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Find the shortest distance from source to target with node-weights
-     * @param source
-     * @param target
-     * @return
+     * @param source the source node
+     * @param target the target node
+     * @return the distance from source to target
      */
     public double shortestDistance(V source, V target, Map<V, Double> vertexWeight) {
     	if (!vertices.contains(source) || !vertices.contains(target))
     		throw new IllegalArgumentException("Source or target does not exist.");
-    	Map<V, V> parentMap = new HashMap<>();
     	Map<V, Double> distanceMap = new HashMap<>();
     	
-    	NavigableSet<V> queue = new TreeSet<>(new Comparator<V>() {
-            public int compare(V o1, V o2) {
-            	int result = Double.compare(distanceMap.get(o1), distanceMap.get(o2));
-            	return result == 0 ? o1.compareTo(o2) : result;
-            }});
+    	NavigableSet<V> queue = new TreeSet<>(new NodeComparator<>(distanceMap));
     	for (V v : vertices) {
     		distanceMap.put(v, v.equals(source) ? 0.0 : Double.POSITIVE_INFINITY);
-    		parentMap.put(v, null);
     		queue.add(v);
     	}
     	while (!queue.isEmpty()) {
     	    V node = queue.pollFirst();
-    	    
-    	    if (distanceMap.get(node).isInfinite())
-    	    	break;
     	    if (node.equals(target))
     	    	break;
-            double distance = distanceMap.get(node);
+    	    double distance = distanceMap.get(node);
+    	    if (Double.isInfinite(distance))
+    	    	break;
+    	    
             // Visit each edge exiting u
             for (V neighbor : getNeighbors(node)) {
                 double newDistance = distance + vertexWeight.get(neighbor);
                 
                 if (newDistance < distanceMap.get(neighbor)) {
                 	queue.remove(neighbor);
-    		        parentMap.put(neighbor, node);
     		        distanceMap.put(neighbor, newDistance);
     		        queue.add(neighbor);
     		    }
             }
         }
     	return distanceMap.get(target);
+    }
+    
+    /**
+     * A comparator for nodes
+     * @author yuhanlyu
+     *
+     * @param <V>
+     */
+    private static final class NodeComparator<V extends Comparable<V>> implements Comparator<V> {
+    	private final Map<V, Double> distanceMap; // distance from the source
+    	
+    	/**
+    	 * Constructor
+    	 * @param map a distance map
+    	 */
+    	public NodeComparator(Map<V, Double> map) {
+    		distanceMap = map;
+    	}
+    	
+		@Override
+		public int compare(V o1, V o2) {
+			int result = Double.compare(distanceMap.get(o1), distanceMap.get(o2));
+        	return result == 0 ? o1.compareTo(o2) : result;
+		}
     }
 }
