@@ -1,6 +1,9 @@
 package arrivability;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javafx.application.Application;
@@ -28,7 +31,7 @@ public class MineField extends Application {
 	// For drawing circles
 	private static final int ROW = 6;
 	private static final int COLUMN = 6;
-	private static final int RADIUS = 3;
+	private static final int RADIUS = 12;
 	private static final int SHIFT = 50;
 	private static final int SEPARATION = 7;
 
@@ -60,14 +63,48 @@ public class MineField extends Application {
         
         // Initialize the nodes
         Group circles = new Group();
+        Map<Point, Circle> circleMap = new HashMap<>();
 		for (Point p : model.vertexSet()) {
             Circle circle = new Circle(SHIFT + p.getY() * RADIUS * SEPARATION, SHIFT + p.getX() * RADIUS * SEPARATION, RADIUS, Color.web("black", 0.05));
+            circleMap.put(p, circle);
             circle.setStrokeType(StrokeType.CENTERED);
             circle.setStroke(Color.web("black", 0.5));
             circle.setStrokeWidth(2);
             circles.getChildren().add(circle);
             pointToCircle.put(p, circle);
             circleToPoint.put(circle, p);
+		}
+		
+		Map<Point, List<Circle>> groupMap = new HashMap<>();
+		// Initialize failure groups
+		for (Point p : model.vertexSet()) {
+			List<Circle> fg = new ArrayList<>();
+			groupMap.put(p, fg);
+			for (Point forbidden : model.getForbiddenArea(p)) {
+				if (model.vertexSet().contains(forbidden))
+					fg.add(circleMap.get(forbidden));
+			}
+			circleMap.get(p).setOnMouseEntered(new EventHandler<MouseEvent>() {
+	        	 
+	            @Override
+	            public void handle(MouseEvent mouseEvent) {
+	            	for (Circle forbidden : fg) {
+	            		forbidden.setStrokeWidth(5.0);
+	            	}
+	            }
+	         
+	        });
+			
+			circleMap.get(p).setOnMouseExited(new EventHandler<MouseEvent>() {
+	        	 
+	            @Override
+	            public void handle(MouseEvent mouseEvent) {
+	            	for (Circle forbidden : fg) {
+	            		forbidden.setStrokeWidth(2.0);
+	            	}
+	            }
+	         
+	        });
 		}
 		
         root.getChildren().add(circles);
@@ -230,5 +267,5 @@ public class MineField extends Application {
     // 0.5665413355469848 time is: 6388
     // 0.6652720919613734 time is: 347942
     // 0.6652720919613734 time is: 78884
-    // For 7 * 7 0.7356914732051443 time is: 2217590
+    // For 7 * 7 0.7356914732051443 time is: 1788986
 }
