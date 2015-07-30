@@ -1,6 +1,7 @@
 package arrivability;
 
 import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,9 +30,9 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	private static final int ROW = 6;
-	private static final int COLUMN = 6;
-	private static final int RADIUS = 12;
+	private static final int ROW = 19;
+	private static final int COLUMN = 19;
+	private static final int RADIUS = 4;
 	private static final int SHIFT = 50;
 	private static final int SEPARATION = 7;
 
@@ -42,6 +43,8 @@ public class MineField extends Application {
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	//private Arrivability model = new FixedRadiusHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
 	//private Arrivability model = new FixedRadiusPoissonHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
+	
+	// For minimizing failure rate
 	private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN);
 	private GridGraph g = new GridGraph(ROW, COLUMN);
 	private FailureRate model = new FailureRate(fg, g, FAILURE_PROBABILITY);
@@ -50,6 +53,9 @@ public class MineField extends Application {
 	private Point source = new Point(ROW / 2, 0);
 	private Point target = new Point(ROW / 2, COLUMN - 1);
 	private int numberOfPaths = 10;
+	
+	// For maximizing arrivability
+	private MaximizeArrivability ma = new MaximizeArrivability(new PathGeneration(g), new PathSelection(g, model), new PathImprovement(g, model));
 	
 	// For auxiliary information
 	private Text info = new Text(10, 10, "#Rows is " + ROW + " #Columns is " + COLUMN);
@@ -173,7 +179,7 @@ public class MineField extends Application {
 			@Override
 			public Void call() {
 				try {
-					//drawPath(model.randomPath(source, target));
+					drawPaths(ma.getSolution(source, target));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

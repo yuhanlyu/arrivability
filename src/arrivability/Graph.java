@@ -3,6 +3,7 @@ package arrivability;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -236,4 +237,100 @@ public class Graph <V extends Comparable<V>> {
         	return result == 0 ? o1.compareTo(o2) : result;
 		}
     }
+    
+    /**
+     * Find the shortest distance from source to target with node-weights
+     * @param source the source node
+     * @param target the target node
+     * @return the distance from source to target
+     */
+    public Path<V> shortestPath(V source, V target, Map<V, Map<V, Double>> edgeWeight) {
+    	if (!vertices.contains(source) || !vertices.contains(target))
+    		throw new IllegalArgumentException("Source or target does not exist.");
+    	Map<V, Double> distanceMap = new HashMap<>();
+    	Map<V, V> parentMap = new HashMap<>();
+    	
+    	NavigableSet<V> queue = new TreeSet<>(new NodeComparator<>(distanceMap));
+    	for (V v : vertices) {
+    		distanceMap.put(v, v.equals(source) ? 0.0 : Double.POSITIVE_INFINITY);
+    		queue.add(v);
+    	}
+    	parentMap.put(source, null);
+    	while (!queue.isEmpty()) {
+    	    V node = queue.pollFirst();
+    	    if (node.equals(target))
+    	    	break;
+    	    double distance = distanceMap.get(node);
+    	    if (Double.isInfinite(distance))
+    	    	break;
+    	    
+            // Visit each edge exiting u
+            for (V neighbor : getNeighbors(node)) {
+                double newDistance = distance + edgeWeight.get(node).get(neighbor);
+                
+                if (newDistance < distanceMap.get(neighbor)) {
+                	queue.remove(neighbor);
+    		        distanceMap.put(neighbor, newDistance);
+    		        queue.add(neighbor);
+    		        parentMap.put(neighbor, node);
+    		    }
+            }
+        }
+    	Deque<V> stack = new ArrayDeque<>();
+		V current = target;
+		while (current != null) {
+			stack.push(current);
+			current = parentMap.get(current);
+		}
+		Path<V> path = new Path<>();
+		while (!stack.isEmpty()) {
+			path.addVertex(stack.pop());
+		}
+		return path;
+    }
+    
+    /**
+     * All pairs shortest path
+     * @param next vertex mapping
+     * @return distance mapping
+     */
+    public Map<V, Map<V, Double>> allPairsSP(Map<V, Map<V, V>> next) {
+    	System.out.println("APSP initialization");
+    	Map<V, Map<V, Double>> distance = new HashMap<>();
+    	for (V u : vertices) {
+    		Map<V, Double> distMap = new HashMap<>();
+    		distance.put(u, distMap);
+    		Map<V, V> nextMap = new HashMap<>();
+    		next.put(u, nextMap);
+    		for (V v : vertices) {
+    			if (u.equals(v)) {
+    				distMap.put(v, 0.0);
+    				nextMap.put(v,  v);
+    			} else if (isAdjacent(u, v)) {
+    				distMap.put(v, getWeight(u, v));
+    				nextMap.put(v,  v);
+    			} else {
+    				distMap.put(v, Double.POSITIVE_INFINITY);
+    				nextMap.put(v,  null);
+    			}
+    		}
+    	}
+    	System.out.println("APSP begins");
+    	for (V k : vertices) {
+    		for (V i : vertices) {
+    			if (!Double.isFinite(distance.get(i).get(k)))
+    				continue;
+    			for (V j : vertices) {
+    				if (!Double.isFinite(distance.get(k).get(j)))
+    					continue;
+    				if (distance.get(i).get(k) + distance.get(k).get(j) < distance.get(i).get(j)) {
+    					distance.get(i).put(j, distance.get(i).get(k) + distance.get(k).get(j));
+    					next.get(i).put(j, next.get(i).get(k));
+    				}
+    			}
+    		}
+    	}
+    	System.out.println("APSP finished");
+    	return distance;
+    } 
 }
