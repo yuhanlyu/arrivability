@@ -336,6 +336,18 @@ public class FailureRate {
 			union.addAll(areas.get(i));
 		return union;
 	}
+	
+	/**
+	 * Clone a list of paths
+	 * @param forbiddenAreas a list of forbidden areas to be cloned
+	 * @return a duplication of the input areas
+	 */
+	public static List<Collection<Point>> cloneAreas(List<Collection<Point>> forbiddenAreas) {
+		Collection<Point>[] duplicates = new Collection[forbiddenAreas.size()];
+		for (int i = 0; i < forbiddenAreas.size(); ++i)
+			duplicates[i] = new HashSet<>(forbiddenAreas.get(i));
+		return Arrays.asList(duplicates);
+	}
     
     public static void main(String[] args) {
     	GridGraph g = new GridGraph(5, 5);

@@ -29,7 +29,7 @@ public class MaximizeArrivability {
 		Map<Point, Map<Point, Point>> next = new HashMap<>();
 		Map<Point, Map<Point, Double>> distance = g.allPairsSP(next);
 		pg = new PathGeneration(g);
-		ps = new PathSelection(g, fr, distance);
+		ps = new PathSelection(fr, distance);
 		pi = new PathImprovement(g, fr, distance, next);
 	}
 	

@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public class PathImprovement {
 	
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
-	private static final int NUMBER_OF_ITERATIONS = 100;
+	private static final int NUMBER_OF_ITERATIONS = 500;
 	private Graph<Point> g;
 	private FailureRate fr;
 	private Map<Point, Map<Point, Double>> distance;
@@ -39,8 +39,8 @@ public class PathImprovement {
 	 */
 	public List<Path<Point>> improve(List<Path<Point>> solution) {
 		logger.info("Start to improve");
-		List<Path<Point>> globalMax = new ArrayList<>();
-		globalMax.addAll(solution);
+		List<Path<Point>> globalMax = Path.clonePaths(solution);
+		
 		double maxArrivability = fr.arrivability(solution);
 		for (int i = 0; i < NUMBER_OF_ITERATIONS; ++i) {
 			if (!canImprove(solution)) {
@@ -51,8 +51,7 @@ public class PathImprovement {
 				if (arrivability > maxArrivability) {
 					logger.info("Improved");
 					maxArrivability = arrivability;
-					globalMax.clear();
-					globalMax.addAll(solution);
+					globalMax = Path.clonePaths(solution);
 				}
 			} 
 		}

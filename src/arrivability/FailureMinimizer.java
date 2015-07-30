@@ -103,8 +103,8 @@ public class FailureMinimizer {
 		List<Collection<Point>> oldAreas = model.forbiddenAreas(oldPaths);
 		List<List<Point>> newEnds = extendEnds(oldPaths, node.getEnds());
 		for (List<Point> ends : newEnds) {
-			List<Path<Point>> paths = clonePaths(oldPaths);
-			List<Collection<Point>> forbiddenAreas = cloneAreas(oldAreas);
+			List<Path<Point>> paths = Path.clonePaths(oldPaths);
+			List<Collection<Point>> forbiddenAreas = FailureRate.cloneAreas(oldAreas);
 			attachEnds(paths, ends, forbiddenAreas);
 			SearchNode newNode = createNode(node, paths, ends, forbiddenAreas);
 			result.add(newNode);
@@ -335,30 +335,6 @@ public class FailureMinimizer {
 			return  " heuristic is " + heuristic + 
 					" priority is " + (cost + heuristic);
 		}
-	}
-	
-	/**
-	 * Clone a list of paths
-	 * @param paths a list of paths to be cloned
-	 * @return a duplication of the input paths
-	 */
-	public static List<Path<Point>> clonePaths(List<Path<Point>> paths) {
-		Path<Point>[] duplicates = new Path[paths.size()];
-		for (int i = 0; i < paths.size(); ++i)
-			duplicates[i] = paths.get(i).duplicate();
-		return Arrays.asList(duplicates);
-	}
-	
-	/**
-	 * Clone a list of paths
-	 * @param forbiddenAreas a list of forbidden areas to be cloned
-	 * @return a duplication of the input areas
-	 */
-	public static List<Collection<Point>> cloneAreas(List<Collection<Point>> forbiddenAreas) {
-		Collection<Point>[] duplicates = new Collection[forbiddenAreas.size()];
-		for (int i = 0; i < forbiddenAreas.size(); ++i)
-			duplicates[i] = new HashSet<>(forbiddenAreas.get(i));
-		return Arrays.asList(duplicates);
 	}
 	
 	/**

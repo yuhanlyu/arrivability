@@ -1,6 +1,7 @@
 package arrivability;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,15 +20,6 @@ public class Path<V> implements Iterable<V> {
 	private List<V> points = new ArrayList<>();
 	
 	public Path() {}
-	
-	/**
-	 * Constructor
-	 * @param points all points in the path in order
-	 */
-	public Path(V[] points) {
-		for (V point : points)
-			this.addVertex(point);
-	}
 	
 	/**
 	 * Constructor
@@ -81,7 +73,7 @@ public class Path<V> implements Iterable<V> {
 	 * @return a duplicated path
 	 */
 	public Path<V> duplicate() {
-		return new Path<>(path);
+		return new Path<>(points);
 	}
 	
 	/**
@@ -116,7 +108,7 @@ public class Path<V> implements Iterable<V> {
 	 */
 	public Path<V> slice(int begin, int end) {
 		int i = 0;
-		Path<V> result = new Path<V>();
+		Path<V> result = new Path<>();
 		for (V point : points) {
 			if (begin <= i && i < end) {
 				result.addVertex(point);
@@ -128,13 +120,24 @@ public class Path<V> implements Iterable<V> {
 	
 	/**
 	 * Concatenate a path in the end
-	 * @param path
+	 * @param p another path
 	 */
-	public void concate(Path<V> path) {
-		for (V point: path)
+	public void concate(Path<V> p) {
+		for (V point: p)
 			addVertex(point);
 	}
 	
+	/**
+	 * Clone a list of paths
+	 * @param paths a list of paths to be cloned
+	 * @return a duplication of the input paths
+	 */
+	public static List<Path<Point>> clonePaths(List<Path<Point>> paths) {
+		Path<Point>[] duplicates = new Path[paths.size()];
+		for (int i = 0; i < paths.size(); ++i)
+			duplicates[i] = paths.get(i).duplicate();
+		return Arrays.asList(duplicates);
+	}
 	
 	@Override
 	public Iterator<V> iterator() {
