@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 /**
  * Undirected graph
@@ -18,6 +19,7 @@ import java.util.TreeSet;
  * @param <V>
  */
 public class Graph <V extends Comparable<V>> {
+	private static final Logger logger = Logger.getLogger(Graph.class.getName());
 	private Collection<V> vertices = new HashSet<>();                    // all vertices
 	private Map<V, Map<V, Double>> neighbors = new HashMap<>();         // adjacent lists
 	
@@ -295,8 +297,8 @@ public class Graph <V extends Comparable<V>> {
      * @return distance mapping
      */
     public Map<V, Map<V, Double>> allPairsSP(Map<V, Map<V, V>> next) {
-    	System.out.println("APSP initialization");
     	Map<V, Map<V, Double>> distance = new HashMap<>();
+    	logger.info("APSP begins");
     	for (V u : vertices) {
     		Map<V, Double> distMap = new HashMap<>();
     		distance.put(u, distMap);
@@ -315,22 +317,23 @@ public class Graph <V extends Comparable<V>> {
     			}
     		}
     	}
-    	System.out.println("APSP begins");
     	for (V k : vertices) {
     		for (V i : vertices) {
-    			if (!Double.isFinite(distance.get(i).get(k)))
+    			double distanceik = distance.get(i).get(k);
+    			if (!Double.isFinite(distanceik))
     				continue;
     			for (V j : vertices) {
-    				if (!Double.isFinite(distance.get(k).get(j)))
+    				double distancekj = distance.get(k).get(j);
+    				if (!Double.isFinite(distancekj))
     					continue;
-    				if (distance.get(i).get(k) + distance.get(k).get(j) < distance.get(i).get(j)) {
-    					distance.get(i).put(j, distance.get(i).get(k) + distance.get(k).get(j));
+    				if (distanceik + distancekj < distance.get(i).get(j)) {
+    					distance.get(i).put(j, distanceik + distancekj);
     					next.get(i).put(j, next.get(i).get(k));
     				}
     			}
     		}
     	}
-    	System.out.println("APSP finished");
+    	logger.info("APSP finished");
     	return distance;
     } 
 }

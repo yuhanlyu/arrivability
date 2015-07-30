@@ -1,6 +1,7 @@
 package arrivability;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,16 +11,25 @@ import java.util.logging.Logger;
 public class PathImprovement {
 	
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
-	private static final int NUMBER_OF_ITERATIONS = 10;
+	private static final int NUMBER_OF_ITERATIONS = 100;
 	private Graph<Point> g;
 	private FailureRate fr;
 	private Map<Point, Map<Point, Double>> distance;
 	private Map<Point, Map<Point, Point>> next = new HashMap<>();
 	
-	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr) {
+	/**
+	 * Constructor
+	 * @param arg_g graph
+	 * @param arg_fr failure rate computation
+	 * @param arg_d distance between all pairs
+	 * @param arg_n next mapping
+	 */
+	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr,
+			Map<Point, Map<Point, Double>> arg_d, Map<Point, Map<Point, Point>> arg_n) {
 		g = arg_g;
 		fr = arg_fr;
-		distance = g.allPairsSP(next);
+		distance = arg_d;
+		next = arg_n;
 	}
 
 	/**
@@ -34,7 +44,7 @@ public class PathImprovement {
 		double maxArrivability = fr.arrivability(solution);
 		for (int i = 0; i < NUMBER_OF_ITERATIONS; ++i) {
 			if (!canImprove(solution)) {
-				logger.info("Cannot improve, escape instead");
+				logger.fine("Cannot improve, escape instead");
 				escape(solution);
 			} else {
 				double arrivability = fr.arrivability(solution);
@@ -46,7 +56,7 @@ public class PathImprovement {
 				}
 			} 
 		}
-		logger.info("Local improvement completed");
+		logger.info("Local improvement completed with arrivability " + maxArrivability);
 		return globalMax;
 	}
 	
@@ -68,7 +78,7 @@ public class PathImprovement {
 	 * @return a new path
 	 */
 	private Path<Point> escape(Path<Point> path) {
-		logger.info("Escape from " + path.toString());
+		logger.fine("Escape from " + path.toString());
 		Path<Point> result = null;
 		Random random = new Random();
 		int randomBegin = random.nextInt(path.size() - 2);
@@ -92,7 +102,7 @@ public class PathImprovement {
 	 * @return a new path
 	 */
 	private Path<Point> escape(Path<Point> path, int randomBegin, int randomEnd) {
-		logger.info("Escape from " + path.toString() + " " + randomBegin + " " + randomEnd);
+		logger.finer("Escape from " + path.toString() + " " + randomBegin + " " + randomEnd);
 		Path<Point> shortest = shortestPath(path.get(randomBegin), path.get(randomEnd));
 	    Point midPoint = shortest.get(shortest.size() / 2);
 	    List<Point> points = new ArrayList<>();
@@ -117,25 +127,22 @@ public class PathImprovement {
 	}
 	
 	/**
-	 * 
-	 * @param solution
-	 * @return
+	 * Try to improve current solution
+	 * @param solution current solution
+	 * @return true if solution is improved, false otherwise 
 	 */
 	private boolean canImprove(List<Path<Point>> solution) {
-		logger.info("Try to improve the solution");
+		logger.fine("Try to improve");
 		double original = fr.arrivability(solution);
 		double max = Double.NEGATIVE_INFINITY;
+		List<Collection<Point>> forbiddenAreas = fr.forbiddenAreas(solution);
 		Path<Point> newPath = null;
 		int removeIndex = -1;
 		for (int i = 0; i < solution.size(); ++i) {
-			logger.info("Try the " + i + "-th path");
-			List<Path<Point>> paths = new ArrayList<>();
-			paths.addAll(solution);
-			Path<Point> path = paths.get(i);
-			paths.remove(i);
+			Collection<Point> oldArea = forbiddenAreas.get(i);
+			Path<Point> path = solution.get(i);
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
-					logger.info("Try the " + i + "-th path with " + j + " " + k);
 					Path<Point> subpath = shortestPath(path.get(j), path.get(k));
 					Path<Point> first = path.slice(0, j);
 					if (subpath.contains(first))
@@ -145,16 +152,16 @@ public class PathImprovement {
 						continue;
 					first.concate(subpath);
 					first.concate(last);
-					paths.add(first);
-					double arrivability = fr.arrivability(paths);
+					forbiddenAreas.set(i, fr.forbiddenArea(first));
+					double arrivability = fr.arrivabilityFromForbidden(forbiddenAreas);
 					if (arrivability > max) {
 						max = arrivability;
 						removeIndex = i;
 						newPath = first;
 					}
-					paths.remove(paths.size() - 1);
 				}
 			}
+			forbiddenAreas.set(i, oldArea);
 		}
 		if (max > original) {
 			solution.remove(removeIndex);
@@ -180,5 +187,4 @@ public class PathImprovement {
 		}
 		return result;
 	}
-
 }

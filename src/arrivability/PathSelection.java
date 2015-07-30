@@ -12,33 +12,51 @@ public class PathSelection {
 	private FailureRate fr;
 	private Map<Point, Map<Point, Double>> distance;
 	
-	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr) {
+	/**
+	 * Constructor
+	 * @param arg_g graph
+	 * @param arg_fr failure rate computation
+	 * @param arg_d distance between all pairs
+	 */
+	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr, Map<Point, Map<Point, Double>> arg_d) {
 		g = arg_g;
 		fr = arg_fr;
+		distance = arg_d;
 	}
 
-	public List<Path<Point>> select(List<Path<Point>> paths, int numberOfRobots) {
-		List<Path<Point>> sols = initialSolution(paths, numberOfRobots);
-		return localImprovement(sols, paths);
+	/**
+	 * Select a subset with a given size maximizing arrivability
+	 * @param candidates all candidates
+	 * @param numberOfRobots number of robots
+	 * @return a list of paths
+	 */
+	public List<Path<Point>> select(List<Path<Point>> candidates, int numberOfRobots) {
+		List<Path<Point>> sols = initialSolution(candidates, numberOfRobots);
+		return localImprovement(sols, candidates);
 	}
 	
-	private List<Path<Point>> initialSolution(List<Path<Point>> paths, int numberOfRobots) {
+	/**
+	 * Find a good initial solution
+	 * @param candidates all candidates
+	 * @param numberOfRobots number of robots
+	 * @return an initial solution
+	 */
+	private List<Path<Point>> initialSolution(List<Path<Point>> candidates, int numberOfRobots) {
 		//return randomK(paths, numberOfRobots);
-		distance = g.allPairsSP(new HashMap<>());
-		return maxNeighborDistance(paths, numberOfRobots);
+		return maxNeighborDistance(candidates, numberOfRobots);
 	}
 	
 	/**
 	 * Find a local maximum of sum of distance to nearest neighbors
-	 * @param paths candidate paths
+	 * @param candidates candidate paths
 	 * @param numberOfRobots number of robots
 	 * @return a local maximum solution
 	 */
-	private List<Path<Point>> maxNeighborDistance(List<Path<Point>> paths, int numberOfRobots) {
+	private List<Path<Point>> maxNeighborDistance(List<Path<Point>> candidates, int numberOfRobots) {
 
-		List<Path<Point>> initial = randomK(paths, numberOfRobots);
+		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
 		
-		while (increaseNeighbor(initial, paths)) {
+		while (increaseNeighbor(initial, candidates)) {
 			;
 		}
 		return initial;
@@ -47,10 +65,10 @@ public class PathSelection {
 	/**
 	 * Increase the sum of distance to nearest neighbors
 	 * @param initial solution
-	 * @param paths candidate paths
+	 * @param candidates candidate paths
 	 * @return true if sum of distance is increased, false otherwise
 	 */
-	private boolean increaseNeighbor(List<Path<Point>> initial, List<Path<Point>> paths) {
+	private boolean increaseNeighbor(List<Path<Point>> initial, List<Path<Point>> candidates) {
 		double sum = sumNeighborDistance(initial);
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
@@ -58,8 +76,8 @@ public class PathSelection {
 			List<Path<Point>> tmp = new ArrayList<>();
 			tmp.addAll(initial);
 			tmp.remove(i);
-			for (int j = 0; j < paths.size(); ++j) {
-				tmp.add(paths.get(j));
+			for (int j = 0; j < candidates.size(); ++j) {
+				tmp.add(candidates.get(j));
 				double newSum = sumNeighborDistance(tmp);
 				if (newSum > max) {
 					max = newSum;
@@ -71,7 +89,7 @@ public class PathSelection {
 		}
 		if (max > sum) {
 			initial.remove(removeIndex);
-			initial.add(paths.get(newIndex));
+			initial.add(candidates.get(newIndex));
 			return true;
 		}
 		return false;
@@ -99,14 +117,14 @@ public class PathSelection {
 	
 	/**
 	 * Find a local maximum of minimum distance
-	 * @param paths candidate paths
+	 * @param candidates candidate paths
 	 * @param numberOfRobots number of robots
 	 * @return a solution
 	 */
-	private List<Path<Point>> maxMinDistance(List<Path<Point>> paths, int numberOfRobots) {
-		List<Path<Point>> initial = randomK(paths, numberOfRobots);
+	private List<Path<Point>> maxMinDistance(List<Path<Point>> candidates, int numberOfRobots) {
+		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
 		
-		while (increaseMin(initial, paths)) {
+		while (increaseMin(initial, candidates)) {
 			;
 		}
 		return initial;
@@ -115,10 +133,10 @@ public class PathSelection {
 	/**
 	 * Increase the minimum distance
 	 * @param initial initial solution
-	 * @param paths candidates
+	 * @param candidates candidates
 	 * @return true if minimum distance is increased, false otherwise
 	 */
-	private boolean increaseMin(List<Path<Point>> initial, List<Path<Point>> paths) {
+	private boolean increaseMin(List<Path<Point>> initial, List<Path<Point>> candidates) {
 		double original = minDistance(initial);
 		double min = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
@@ -126,8 +144,8 @@ public class PathSelection {
 			List<Path<Point>> tmp = new ArrayList<>();
 			tmp.addAll(initial);
 			tmp.remove(i);
-			for (int j = 0; j < paths.size(); ++j) {
-				tmp.add(paths.get(j));
+			for (int j = 0; j < candidates.size(); ++j) {
+				tmp.add(candidates.get(j));
 				double newMin = minDistance(tmp);
 				if (newMin > min) {
 					min = newMin;
@@ -139,7 +157,7 @@ public class PathSelection {
 		}
 		if (min > original) {
 			initial.remove(removeIndex);
-			initial.add(paths.get(newIndex));
+			initial.add(candidates.get(newIndex));
 			return true;
 		}
 		return false;
@@ -163,14 +181,14 @@ public class PathSelection {
 	
 	/**
 	 * Find a local maximum of sum of distances
-	 * @param paths candidate paths
+	 * @param candidates candidate paths
 	 * @param numberOfRobots number of robots
 	 * @return a solution
 	 */
-	private List<Path<Point>> maxSumDistance(List<Path<Point>> paths, int numberOfRobots) {
-		List<Path<Point>> initial = randomK(paths, numberOfRobots);
+	private List<Path<Point>> maxSumDistance(List<Path<Point>> candidates, int numberOfRobots) {
+		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
 		
-		while (increaseSum(initial, paths)) {
+		while (increaseSum(initial, candidates)) {
 			;
 		}
 		return initial;
@@ -193,10 +211,10 @@ public class PathSelection {
 	/**
 	 * Increase the sum of total distance
 	 * @param initial initial solution
-	 * @param paths candidate paths
+	 * @param candidates candidate paths
 	 * @return true if total sum is increased, false otherwise
 	 */
-	private boolean increaseSum(List<Path<Point>> initial, List<Path<Point>> paths) {
+	private boolean increaseSum(List<Path<Point>> initial, List<Path<Point>> candidates) {
 		double sum = sumDistance(initial);
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
@@ -204,8 +222,8 @@ public class PathSelection {
 			List<Path<Point>> tmp = new ArrayList<>();
 			tmp.addAll(initial);
 			tmp.remove(i);
-			for (int j = 0; j < paths.size(); ++j) {
-				tmp.add(paths.get(j));
+			for (int j = 0; j < candidates.size(); ++j) {
+				tmp.add(candidates.get(j));
 				double newSum = sumDistance(tmp);
 				if (newSum > max) {
 					max = newSum;
@@ -217,7 +235,7 @@ public class PathSelection {
 		}
 		if (max > sum) {
 			initial.remove(removeIndex);
-			initial.add(paths.get(newIndex));
+			initial.add(candidates.get(newIndex));
 			return true;
 		}
 		return false;
@@ -255,29 +273,29 @@ public class PathSelection {
 	
 	/**
 	 * Pick k random paths
-	 * @param paths a set of paths
+	 * @param candidates a set of paths
 	 * @param numberOfRoboots number of selected paths
 	 * @return a set of paths
 	 */
-	private List<Path<Point>> randomK(List<Path<Point>> paths, int numberOfRobots) {
+	private List<Path<Point>> randomK(List<Path<Point>> candidates, int numberOfRobots) {
 		List<Path<Point>> result = new ArrayList<>();
 		Random random = new Random();
 		for (int count = 0; count < numberOfRobots; ++count) {
-			result.add(paths.get(random.nextInt(paths.size())));
+			result.add(candidates.get(random.nextInt(candidates.size())));
 		}
 		return result;
 	}
 	
 	/**
 	 * Pick first K paths
-	 * @param paths a set of paths
+	 * @param candidates a set of paths
 	 * @param numberOfRoboots number of selected paths
 	 * @return a set of paths
 	 */
-	private List<Path<Point>> firstK(List<Path<Point>> paths, int numberOfRobots) {
+	private List<Path<Point>> firstK(List<Path<Point>> candidates, int numberOfRobots) {
 		List<Path<Point>> result = new ArrayList<>();
 		int count = 0;
-		for (Path<Point> path : paths) {
+		for (Path<Point> path : candidates) {
 			result.add(path);
 			++count;
 			if (count == numberOfRobots)
@@ -288,30 +306,30 @@ public class PathSelection {
 	
 	/**
 	 * Improve arrivability
-	 * @param paths an initial solution
+	 * @param initial an initial solution
 	 * @param candidates candidate paths
 	 * @return an improved solution
 	 */
-	private List<Path<Point>> localImprovement(List<Path<Point>> paths, List<Path<Point>> candidates) {
-		while (canImprove(paths, candidates)) {
+	private List<Path<Point>> localImprovement(List<Path<Point>> initial, List<Path<Point>> candidates) {
+		while (canImprove(initial, candidates)) {
 			;
 		}
-		return paths;
+		return initial;
 	}
 	
 	/**
 	 * Improve arrivability
-	 * @param paths an initial solution
+	 * @param initial an initial solution
 	 * @param candidates candidate paths
 	 * @return true if initial solution is improved, false otherwise
 	 */
-	private boolean canImprove(List<Path<Point>> paths, List<Path<Point>> candidates) {
-		double original = fr.arrivability(paths);
+	private boolean canImprove(List<Path<Point>> initial, List<Path<Point>> candidates) {
+		double original = fr.arrivability(initial);
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
-		for (int i = 0; i < paths.size(); ++i) {
+		for (int i = 0; i < initial.size(); ++i) {
 			List<Path<Point>> tmp = new ArrayList<>();
-			tmp.addAll(paths);
+			tmp.addAll(initial);
 			tmp.remove(i);
 			for (int j = 0; j < candidates.size(); ++j) {
 				tmp.add(candidates.get(j));
@@ -325,11 +343,10 @@ public class PathSelection {
 			}
 		}
 		if (max > original) {
-			paths.remove(removeIndex);
-			paths.add(candidates.get(newIndex));
+			initial.remove(removeIndex);
+			initial.add(candidates.get(newIndex));
 			return true;
 		}
 		return false;
 	}
-
 }

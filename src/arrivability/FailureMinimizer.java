@@ -342,7 +342,7 @@ public class FailureMinimizer {
 	 * @param paths a list of paths to be cloned
 	 * @return a duplication of the input paths
 	 */
-	private static List<Path<Point>> clonePaths(List<Path<Point>> paths) {
+	public static List<Path<Point>> clonePaths(List<Path<Point>> paths) {
 		Path<Point>[] duplicates = new Path[paths.size()];
 		for (int i = 0; i < paths.size(); ++i)
 			duplicates[i] = paths.get(i).duplicate();
@@ -354,7 +354,7 @@ public class FailureMinimizer {
 	 * @param forbiddenAreas a list of forbidden areas to be cloned
 	 * @return a duplication of the input areas
 	 */
-	private static List<Collection<Point>> cloneAreas(List<Collection<Point>> forbiddenAreas) {
+	public static List<Collection<Point>> cloneAreas(List<Collection<Point>> forbiddenAreas) {
 		Collection<Point>[] duplicates = new Collection[forbiddenAreas.size()];
 		for (int i = 0; i < forbiddenAreas.size(); ++i)
 			duplicates[i] = new HashSet<>(forbiddenAreas.get(i));

@@ -30,8 +30,8 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	private static final int ROW = 19;
-	private static final int COLUMN = 19;
+	private static final int ROW = 25;
+	private static final int COLUMN = 25;
 	private static final int RADIUS = 4;
 	private static final int SHIFT = 50;
 	private static final int SEPARATION = 7;
@@ -55,7 +55,7 @@ public class MineField extends Application {
 	private int numberOfPaths = 10;
 	
 	// For maximizing arrivability
-	private MaximizeArrivability ma = new MaximizeArrivability(new PathGeneration(g), new PathSelection(g, model), new PathImprovement(g, model));
+	private MaximizeArrivability ma = new MaximizeArrivability(g, model);
 	
 	// For auxiliary information
 	private Text info = new Text(10, 10, "#Rows is " + ROW + " #Columns is " + COLUMN);
@@ -132,7 +132,7 @@ public class MineField extends Application {
             @Override
             public void handle(final MouseEvent mouseEvent) {
         		// Compute and draw path
-            	computePaths();
+            	//computePaths();
             }
         });
         
