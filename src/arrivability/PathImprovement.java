@@ -68,8 +68,7 @@ public class PathImprovement {
 		Random random = new Random();
 		int randomIndex = random.nextInt(solution.size());
 		Path<Point> path = solution.get(randomIndex);
-		solution.remove(randomIndex);
-		solution.add(escape(path));
+		solution.set(randomIndex, escape(path));
 	}
 	
 	/**
@@ -164,8 +163,7 @@ public class PathImprovement {
 			forbiddenAreas.set(i, oldArea);
 		}
 		if (max > original) {
-			solution.remove(removeIndex);
-			solution.add(newPath);
+			solution.set(removeIndex, newPath);
 			return true;
 		}
 		return false;

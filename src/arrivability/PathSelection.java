@@ -1,14 +1,13 @@
 package arrivability;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class PathSelection {
 	
-	private Graph<Point> g;
 	private FailureRate fr;
 	private Map<Point, Map<Point, Double>> distance;
 	
@@ -18,8 +17,7 @@ public class PathSelection {
 	 * @param arg_fr failure rate computation
 	 * @param arg_d distance between all pairs
 	 */
-	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr, Map<Point, Map<Point, Double>> arg_d) {
-		g = arg_g;
+	public PathSelection(FailureRate arg_fr, Map<Point, Map<Point, Double>> arg_d) {
 		fr = arg_fr;
 		distance = arg_d;
 	}
@@ -88,8 +86,7 @@ public class PathSelection {
 			}
 		}
 		if (max > sum) {
-			initial.remove(removeIndex);
-			initial.add(candidates.get(newIndex));
+			initial.set(removeIndex, candidates.get(newIndex));
 			return true;
 		}
 		return false;
@@ -277,13 +274,13 @@ public class PathSelection {
 	 * @param numberOfRoboots number of selected paths
 	 * @return a set of paths
 	 */
-	private List<Path<Point>> randomK(List<Path<Point>> candidates, int numberOfRobots) {
-		List<Path<Point>> result = new ArrayList<>();
+	private static List<Path<Point>> randomK(List<Path<Point>> candidates, int numberOfRobots) {
+		Path<Point>[] result = new Path[numberOfRobots];
 		Random random = new Random();
 		for (int count = 0; count < numberOfRobots; ++count) {
-			result.add(candidates.get(random.nextInt(candidates.size())));
+			result[count] = candidates.get(random.nextInt(candidates.size()));
 		}
-		return result;
+		return Arrays.asList(result);
 	}
 	
 	/**
@@ -328,23 +325,20 @@ public class PathSelection {
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
 		for (int i = 0; i < initial.size(); ++i) {
-			List<Path<Point>> tmp = new ArrayList<>();
-			tmp.addAll(initial);
-			tmp.remove(i);
+			Path<Point> oldPath = initial.get(i);
 			for (int j = 0; j < candidates.size(); ++j) {
-				tmp.add(candidates.get(j));
-				double newSum = fr.arrivability(tmp);
+				initial.set(i, candidates.get(j));
+				double newSum = fr.arrivability(initial);
 				if (newSum > max) {
 					max = newSum;
 					removeIndex = i;
 					newIndex = j;
 				}
-				tmp.remove(tmp.size() - 1);
 			}
+			initial.set(i, oldPath);
 		}
 		if (max > original) {
-			initial.remove(removeIndex);
-			initial.add(candidates.get(newIndex));
+			initial.set(removeIndex, candidates.get(newIndex));
 			return true;
 		}
 		return false;
