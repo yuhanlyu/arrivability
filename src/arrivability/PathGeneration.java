@@ -2,6 +2,7 @@ package arrivability;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ public class PathGeneration {
 	 * @return a list of paths
 	 */
 	public List<Path<Point>> reweightPaths(int numberOfPaths, Point source, Point target) {
-		List<Path<Point>> paths = new ArrayList<>();
+		Path<Point>[] paths = new Path[numberOfPaths];
 		Map<Point, Map<Point, Double>> edgeWeight = new HashMap<>();
 		// Initialization of edge weight
 		for (Point vertex : g.vertexSet()) {
@@ -59,7 +60,7 @@ public class PathGeneration {
 		// Reweighting
 		for (int i = 0; i < numberOfPaths; ++i) {
 			Path<Point> path = reweightPath(source, target, edgeWeight);
-			paths.add(path);
+			paths[i] = path;
 			Point previous = null;
 			for (Point vertex : path) {
 				if (previous == null) {
@@ -71,7 +72,7 @@ public class PathGeneration {
 				previous = vertex;
 			}
 		}
-		return paths;
+		return Arrays.asList(paths);
 	}
 	
 	/**
@@ -95,10 +96,10 @@ public class PathGeneration {
 	 * @return a list of random paths
 	 */
 	public List<Path<Point>> randomPaths(int numberOfPaths, Point source, Point target) {
-		List<Path<Point>> paths = new ArrayList<>();
+		Path<Point>[] paths = new Path[numberOfPaths];
 		for (int i = 0; i < numberOfPaths; ++i)
-			paths.add(randomPath(source, target));
-		return paths;
+			paths[i] = randomPath(source, target);
+		return Arrays.asList(paths);
 	}
 	
 	/**
