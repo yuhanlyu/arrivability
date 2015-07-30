@@ -1,6 +1,5 @@
 package arrivability;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -71,19 +70,17 @@ public class PathSelection {
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
 		for (int i = 0; i < initial.size(); ++i) {
-			List<Path<Point>> tmp = new ArrayList<>();
-			tmp.addAll(initial);
-			tmp.remove(i);
+			Path<Point> oldPath = initial.get(i);
 			for (int j = 0; j < candidates.size(); ++j) {
-				tmp.add(candidates.get(j));
-				double newSum = sumNeighborDistance(tmp);
+				initial.set(i, candidates.get(j));
+				double newSum = sumNeighborDistance(initial);
 				if (newSum > max) {
 					max = newSum;
 					removeIndex = i;
 					newIndex = j;
 				}
-				tmp.remove(tmp.size() - 1);
 			}
+			initial.set(i, oldPath);
 		}
 		if (max > sum) {
 			initial.set(removeIndex, candidates.get(newIndex));
@@ -138,23 +135,20 @@ public class PathSelection {
 		double min = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
 		for (int i = 0; i < initial.size(); ++i) {
-			List<Path<Point>> tmp = new ArrayList<>();
-			tmp.addAll(initial);
-			tmp.remove(i);
+			Path<Point> oldPath = initial.get(i);
 			for (int j = 0; j < candidates.size(); ++j) {
-				tmp.add(candidates.get(j));
-				double newMin = minDistance(tmp);
+				initial.set(i, candidates.get(j));
+				double newMin = minDistance(initial);
 				if (newMin > min) {
 					min = newMin;
 					removeIndex = i;
 					newIndex = j;
 				}
-				tmp.remove(tmp.size() - 1);
 			}
+			initial.set(i, oldPath);
 		}
 		if (min > original) {
-			initial.remove(removeIndex);
-			initial.add(candidates.get(newIndex));
+			initial.set(removeIndex, candidates.get(newIndex));
 			return true;
 		}
 		return false;
@@ -198,8 +192,8 @@ public class PathSelection {
 	 */
 	private double sumDistance(List<Path<Point>> paths) {
 		double sum = 0.0;
-		for (Path path1 : paths) {
-			for (Path path2 : paths)
+		for (Path<Point> path1 : paths) {
+			for (Path<Point> path2 : paths)
 				sum += distance(path1, path2);
 		}
 		return sum;
@@ -216,23 +210,20 @@ public class PathSelection {
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
 		for (int i = 0; i < initial.size(); ++i) {
-			List<Path<Point>> tmp = new ArrayList<>();
-			tmp.addAll(initial);
-			tmp.remove(i);
+			Path<Point> oldPath = initial.get(i);			
 			for (int j = 0; j < candidates.size(); ++j) {
-				tmp.add(candidates.get(j));
-				double newSum = sumDistance(tmp);
+				initial.set(i, candidates.get(j));
+				double newSum = sumDistance(initial);
 				if (newSum > max) {
 					max = newSum;
 					removeIndex = i;
 					newIndex = j;
 				}
-				tmp.remove(tmp.size() - 1);
 			}
+			initial.set(i, oldPath);
 		}
 		if (max > sum) {
-			initial.remove(removeIndex);
-			initial.add(candidates.get(newIndex));
+			initial.set(removeIndex, candidates.get(newIndex));
 			return true;
 		}
 		return false;
@@ -290,15 +281,15 @@ public class PathSelection {
 	 * @return a set of paths
 	 */
 	private List<Path<Point>> firstK(List<Path<Point>> candidates, int numberOfRobots) {
-		List<Path<Point>> result = new ArrayList<>();
+		Path<Point>[] result = new Path[numberOfRobots];
 		int count = 0;
 		for (Path<Point> path : candidates) {
-			result.add(path);
+			result[count] = path;
 			++count;
 			if (count == numberOfRobots)
 				break;
 		}
-		return result;
+		return Arrays.asList(result);
 	}
 	
 	/**
