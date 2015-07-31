@@ -25,10 +25,19 @@ public class Graph <V extends Comparable<V>> {
 	
 	/**
      * Return the vertexset
-     * @return
+     * @return the vertex set
      */
     public Collection<V> vertexSet() {
     	return vertices;
+    }
+    
+    /**
+     * Test whether a vertex is in the vertex set
+     * @param vertex a vertex
+     * @return true if the graph contains vertex, false otherwise
+     */
+    public boolean contains(V vertex) {
+    	return vertexSet().contains(vertex);
     }
     
     /**
@@ -36,8 +45,8 @@ public class Graph <V extends Comparable<V>> {
      * @param vertex the vertex to be added
      */
     public void addVertex(V vertex) {
-    	if (vertices.contains(vertex))
-    		throw new IllegalArgumentException("Insert a duplicate vertex.");
+    	if (contains(vertex))
+    		throw new IllegalArgumentException("Insert a duplicate vertex");
     	vertices.add(vertex);
     	neighbors.put(vertex, new HashMap<>());
     }
@@ -47,8 +56,8 @@ public class Graph <V extends Comparable<V>> {
      * @param vertex the vertex to be removed
      */
     public void removeVertex(V vertex) {
-    	if (!vertices.contains(vertex))
-    		throw new IllegalArgumentException("Remove a non-existing vertex.");
+    	if (!contains(vertex))
+    		throw new IllegalArgumentException("Remove a non-existing vertex");
     	for (V neighbor : getNeighbors(vertex)) {
     		neighbors.get(neighbor).remove(vertex);
     	}
@@ -62,8 +71,8 @@ public class Graph <V extends Comparable<V>> {
      * @param target
      */
     public void addEdge(V source, V target) {
-    	if (!vertices.contains(source) || !vertices.contains(target))
-    		throw new IllegalArgumentException("Insert an edge between non-existence vertices.");
+    	if (!contains(source) || !vertices.contains(target))
+    		throw new IllegalArgumentException("Insert an edge between non-existence vertices");
     	neighbors.get(source).put(target, 1.0);
     	neighbors.get(target).put(source, 1.0);
     }
@@ -75,8 +84,8 @@ public class Graph <V extends Comparable<V>> {
      * @param weight
      */
     public void addEdge(V source, V target, double weight) {
-    	if (!vertices.contains(source) || !vertices.contains(target))
-    		throw new IllegalArgumentException("Insert an edge between non-existence vertices.");
+    	if (!contains(source) || !contains(target))
+    		throw new IllegalArgumentException("Insert an edge between non-existence vertices");
     	neighbors.get(source).put(target, weight);
     	neighbors.get(target).put(source, weight);
     }
@@ -88,8 +97,8 @@ public class Graph <V extends Comparable<V>> {
      * @return
      */
     public boolean isAdjacent(V source, V target) {
-    	if (!vertices.contains(source) || !vertices.contains(target))
-    		throw new IllegalArgumentException("Test an edge between non-existence vertices.");
+    	if (!contains(source) || !contains(target))
+    		throw new IllegalArgumentException("Test an edge between non-existence vertices");
     	return neighbors.get(source).keySet().contains(target);
     }
     
@@ -100,8 +109,8 @@ public class Graph <V extends Comparable<V>> {
      * @return
      */
     public double getWeight(V source, V target) {
-    	if (!vertices.contains(source) || !vertices.contains(target))
-    		throw new IllegalArgumentException("Test an edge between non-existence vertices.");
+    	if (!contains(source) || !contains(target))
+    		throw new IllegalArgumentException("Test an edge between non-existence vertices");
     	return neighbors.get(source).get(target);
     }
     
@@ -110,8 +119,10 @@ public class Graph <V extends Comparable<V>> {
      * @param v
      * @return
      */
-    public Collection<V> getNeighbors(V v) {
-    	return neighbors.get(v).keySet();
+    public Collection<V> getNeighbors(V vertex) {
+    	if (!contains(vertex))
+    		throw new IllegalArgumentException("Find neighbors of a non-existing vertex");
+    	return neighbors.get(vertex).keySet();
     }
     
     /**
@@ -121,8 +132,8 @@ public class Graph <V extends Comparable<V>> {
      */
     public double unweightedDistance(Iterable<V> vertexset, V target) {
     	for (V v : vertexset) {
-    		if (!vertexSet().contains(v))
-        		throw new IllegalArgumentException("Path does not exist.");
+    		if (!contains(v))
+        		throw new IllegalArgumentException("Path does not exist");
     	}
     	
     	Map<V, Integer> distanceMap = new HashMap<>();
@@ -160,11 +171,11 @@ public class Graph <V extends Comparable<V>> {
      * @return shortest distance from source to target
      */
     public double unweightedDistance(V source, V target) {
-    	if (!vertices.contains(source) || !vertices.contains(target))
-    		throw new IllegalArgumentException("Source or target does not exist.");
+    	if (!contains(source) || !contains(target))
+    		throw new IllegalArgumentException("Source or target does not exist");
     	Map<V, Double> distanceMap = new HashMap<>();
     	Queue<V> queue = new ArrayDeque<>();
-    	for (V v : vertices) {
+    	for (V v : vertexSet()) {
     		distanceMap.put(v, Double.POSITIVE_INFINITY);
     	}
     	distanceMap.put(source, 0.0);
@@ -195,12 +206,12 @@ public class Graph <V extends Comparable<V>> {
      * @return the distance from source to target
      */
     public double shortestDistance(V source, V target, Map<V, Double> vertexWeight) {
-    	if (!vertices.contains(source) || !vertices.contains(target))
-    		throw new IllegalArgumentException("Source or target does not exist.");
+    	if (!contains(source) || !contains(target))
+    		throw new IllegalArgumentException("Source or target does not exist");
     	Map<V, Double> distanceMap = new HashMap<>();
     	
     	NavigableSet<V> queue = new TreeSet<>(new NodeComparator<>(distanceMap));
-    	for (V v : vertices) {
+    	for (V v : vertexSet()) {
     		distanceMap.put(v, v.equals(source) ? 0.0 : Double.POSITIVE_INFINITY);
     		queue.add(v);
     	}
@@ -257,13 +268,13 @@ public class Graph <V extends Comparable<V>> {
      * @return the distance from source to target
      */
     public Path<V> shortestPath(V source, V target, Map<V, Map<V, Double>> edgeWeight) {
-    	if (!vertices.contains(source) || !vertices.contains(target))
-    		throw new IllegalArgumentException("Source or target does not exist.");
+    	if (!contains(source) || !contains(target))
+    		throw new IllegalArgumentException("Source or target does not exist");
     	Map<V, Double> distanceMap = new HashMap<>();
     	Map<V, V> parentMap = new HashMap<>();
     	
     	NavigableSet<V> queue = new TreeSet<>(new NodeComparator<>(distanceMap));
-    	for (V v : vertices) {
+    	for (V v : vertexSet()) {
     		distanceMap.put(v, v.equals(source) ? 0.0 : Double.POSITIVE_INFINITY);
     		queue.add(v);
     	}
@@ -309,7 +320,7 @@ public class Graph <V extends Comparable<V>> {
     public Map<V, Map<V, Double>> allPairsSP(Map<V, Map<V, V>> next) {
     	Map<V, Map<V, Double>> distance = new HashMap<>();
     	logger.info("APSP begins");
-    	for (V u : vertices) {
+    	for (V u : vertexSet()) {
     		Map<V, Double> distMap = new HashMap<>();
     		distance.put(u, distMap);
     		Map<V, V> nextMap = new HashMap<>();
@@ -327,12 +338,12 @@ public class Graph <V extends Comparable<V>> {
     			}
     		}
     	}
-    	for (V k : vertices) {
-    		for (V i : vertices) {
+    	for (V k : vertexSet()) {
+    		for (V i : vertexSet()) {
     			double distanceik = distance.get(i).get(k);
     			if (!Double.isFinite(distanceik))
     				continue;
-    			for (V j : vertices) {
+    			for (V j : vertexSet()) {
     				double distancekj = distance.get(k).get(j);
     				if (!Double.isFinite(distancekj))
     					continue;

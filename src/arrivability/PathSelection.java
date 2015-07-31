@@ -238,20 +238,17 @@ public class PathSelection {
 	private double distance(Path<Point> path1, Path<Point> path2) {
 		int m1 = path1.size(), m2 = path2.size();
 		double[][] fre = new double[m1 + 1][m2 + 1];
-		for (int i = 1;i <= m2; i++) 
+		for (int i = 1; i <= m2; i++) 
 			fre[0][i] = Double.POSITIVE_INFINITY;
     	for (int i=1; i <= m1; i++) 
-    		fre[i][0]=Double.POSITIVE_INFINITY;
+    		fre[i][0] = Double.POSITIVE_INFINITY;
     	
     	int i = 1;
     	for (Point p1 : path1) {
     		int j = 1;
     		for (Point p2 : path2) {
-    			fre[i][j] = distance.get(p1).get(p2);
-    			double u = fre[i][j-1];
-    			if (fre[i-1][j]<u) u=fre[i-1][j];
-    			if (fre[i-1][j-1]<u) u=fre[i-1][j-1];
-    			if (u>fre[i][j]) fre[i][j]=u;
+    			fre[i][j] = Math.max(distance.get(p1).get(p2), 
+    					Math.min(Math.min(fre[i][j-1], fre[i-1][j]), fre[i-1][j-1]));
     			++j;
     		}
     		++i;

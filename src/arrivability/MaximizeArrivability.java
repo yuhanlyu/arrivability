@@ -44,11 +44,16 @@ public class MaximizeArrivability {
 		logger.info("Start to find an optimal solution");
 		long startTime = System.nanoTime();
 		List<Path<Point>> paths = pg.getPaths(NUMBER_OF_GENERATED_PATHS, source, target);
+		long generationTime = System.nanoTime();
 		List<Path<Point>> solution = ps.select(paths, numberOfRobots);
+		long selectionTime = System.nanoTime();
 		List<Path<Point>> improved = pi.improve(solution);
 		long endTime = System.nanoTime();
     	long duration = (endTime - startTime) / 1000000;
     	logger.info("Search completed in " + duration + " milliseconds");
+    	logger.info("Path generation takes " + (generationTime - startTime) / 1000000 + " milliseconds");
+    	logger.info("Path selection takes " + (selectionTime - generationTime) / 1000000 + " milliseconds");
+    	logger.info("Path improvement takes " + (endTime - selectionTime) / 1000000 + " milliseconds");
     	return improved;
 	}
 }

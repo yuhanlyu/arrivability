@@ -22,6 +22,7 @@ public class FailureRate {
 	private FailureGroup<Point> fg;
 	private Graph<Point> g;
 	private double successProbability;
+	private Map<Point, Integer> indexMap = new HashMap<>();
 	
 	/**
 	 * Constructor
@@ -36,6 +37,11 @@ public class FailureRate {
 		fg = group;
 		g = arg_g;
 		successProbability = 1 - failure;
+		int i = 0;
+		for (Point point : fg.vertexSet()) {
+			indexMap.put(point, i);
+			++i;
+		}
 	}
 	
 	/**
@@ -409,12 +415,28 @@ public class FailureRate {
 	 * @return a bitset corresponding to forbidden area
 	 */
 	public BitSet fromAreaToBitSet(Collection<Point> forbiddenArea) {
-		BitSet result = new BitSet(g.vertexSet().size());
+		BitSet result = new BitSet(fg.vertexSet().size());
 		int i = 0;
-		for (Point point : g.vertexSet()) {
+		for (Point point : fg.vertexSet()) {
 			if (forbiddenArea.contains(point))
 				result.set(i);
 			++i;
+		}
+		return result;
+	}
+	
+	/**
+	 * Convert a path to a bitset representing path's forbidden area
+	 * @param path a path
+	 * @return a bitset
+	 */
+	public BitSet fromPathToBitSet(Path<Point> path) {
+		BitSet result = new BitSet(fg.vertexSet().size());
+		for (Point point : path) {
+			for (Point neighbor : fg.getForbiddenArea(point)) {
+				int index = indexMap.get(neighbor);
+				result.set(index);
+			}
 		}
 		return result;
 	}

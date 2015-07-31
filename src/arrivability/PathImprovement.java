@@ -154,7 +154,8 @@ public class PathImprovement {
 					first.concate(subpath);
 					first.concate(last);
 					//forbiddenAreas.set(i, fr.forbiddenArea(first));
-					bitsets.set(i, fr.fromAreaToBitSet(fr.forbiddenArea(first)));
+					//bitsets.set(i, fr.fromAreaToBitSet(fr.forbiddenArea(first)));
+					bitsets.set(i, fr.fromPathToBitSet(first));
 					//double arrivability = fr.arrivabilityFromForbidden(forbiddenAreas);
 					double arrivability = fr.arrivabilityFromBitSets(bitsets);
 					if (arrivability > max) {
