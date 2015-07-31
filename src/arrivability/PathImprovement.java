@@ -1,6 +1,7 @@
 package arrivability;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
 public class PathImprovement {
 	
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
-	private static final int NUMBER_OF_ITERATIONS = 500;
+	private static final int NUMBER_OF_ITERATIONS = 100;
 	private Graph<Point> g;
 	private FailureRate fr;
 	private Map<Point, Map<Point, Double>> distance;
@@ -134,10 +135,12 @@ public class PathImprovement {
 		double original = fr.arrivability(solution);
 		double max = Double.NEGATIVE_INFINITY;
 		List<Collection<Point>> forbiddenAreas = fr.forbiddenAreas(solution);
+		List<BitSet> bitsets = fr.fromAreasToBitSets(forbiddenAreas);
 		Path<Point> newPath = null;
 		int removeIndex = -1;
 		for (int i = 0; i < solution.size(); ++i) {
-			Collection<Point> oldArea = forbiddenAreas.get(i);
+			//Collection<Point> oldArea = forbiddenAreas.get(i);
+			BitSet oldSet = bitsets.get(i);
 			Path<Point> path = solution.get(i);
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
@@ -150,8 +153,10 @@ public class PathImprovement {
 						continue;
 					first.concate(subpath);
 					first.concate(last);
-					forbiddenAreas.set(i, fr.forbiddenArea(first));
-					double arrivability = fr.arrivabilityFromForbidden(forbiddenAreas);
+					//forbiddenAreas.set(i, fr.forbiddenArea(first));
+					bitsets.set(i, fr.fromAreaToBitSet(fr.forbiddenArea(first)));
+					//double arrivability = fr.arrivabilityFromForbidden(forbiddenAreas);
+					double arrivability = fr.arrivabilityFromBitSets(bitsets);
 					if (arrivability > max) {
 						max = arrivability;
 						removeIndex = i;
@@ -159,7 +164,8 @@ public class PathImprovement {
 					}
 				}
 			}
-			forbiddenAreas.set(i, oldArea);
+			bitsets.set(i, oldSet);
+			//forbiddenAreas.set(i, oldArea);
 		}
 		if (max > original) {
 			solution.set(removeIndex, newPath);

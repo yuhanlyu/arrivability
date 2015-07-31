@@ -2,6 +2,7 @@ package arrivability;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -155,6 +156,15 @@ public class FailureRate {
 	public double arrivabilityFromForbidden(Collection<Point> forbiddenArea) {
 		return Math.pow(successProbability, forbiddenArea.size());
 	}
+	
+	/**
+	 * Compute the arrivability for the size of forbidden area
+	 * @param size the size of forbidden area
+	 * @return arrivability
+	 */
+	public double arrivabilityFromForbidden(double size) {
+		return Math.pow(successProbability, size);
+	}
     
     /**
 	 * Compute the arrivability of a set of paths
@@ -197,6 +207,38 @@ public class FailureRate {
 			    ++i;
 			}
 			arrivability += (count % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(forbiddenArea);
+			// Find the next subset
+			for (i = 0; i < forbiddenAreas.size() && isSelected[i] == 1; ++i)
+				isSelected[i] = 0;
+			if (i == forbiddenAreas.size())
+				return arrivability;
+			isSelected[i] = 1;
+			forbiddenArea.clear();
+		}
+    }
+    
+    /**
+     * Compute arrivability from a list of forbidden areas
+     * @param forbiddenAreas bitset representation of areas
+     * @return arrivability
+     */
+    public double arrivabilityFromBitSets(List<BitSet> forbiddenAreas) {
+    	int[] isSelected = new int[forbiddenAreas.size()];
+		isSelected[0] = 1;
+		BitSet forbiddenArea = new BitSet(g.vertexSet().size());
+		// enumerate all subset and compute its contribution to arrivability
+		for (double arrivability = 0.0; ;) {
+			// Compute the arrivability for the subset
+			
+			int count = 0, i = 0;
+			for (BitSet area : forbiddenAreas) {
+				if (isSelected[i] == 1) {
+					++count;
+					forbiddenArea.or(area);						
+				}
+			    ++i;
+			}
+			arrivability += (count % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(forbiddenArea.cardinality());
 			// Find the next subset
 			for (i = 0; i < forbiddenAreas.size() && isSelected[i] == 1; ++i)
 				isSelected[i] = 0;
@@ -347,6 +389,34 @@ public class FailureRate {
 		for (int i = 0; i < forbiddenAreas.size(); ++i)
 			duplicates[i] = new HashSet<>(forbiddenAreas.get(i));
 		return Arrays.asList(duplicates);
+	}
+	
+	/**
+	 * Convert from forbidden areas to bitsets
+	 * @param forbiddenAreas a list of forbidden areas
+	 * @return a list of bitsets
+	 */
+	public List<BitSet> fromAreasToBitSets(List<Collection<Point>> forbiddenAreas) { 
+		BitSet[] result = new BitSet[forbiddenAreas.size()];
+		for (int i = 0; i < forbiddenAreas.size(); ++i)
+			result[i] = fromAreaToBitSet(forbiddenAreas.get(i));
+		return Arrays.asList(result);
+	}
+	
+	/**
+	 * Convert from forbiden area
+	 * @param forbiddenArea forbidden area
+	 * @return a bitset corresponding to forbidden area
+	 */
+	public BitSet fromAreaToBitSet(Collection<Point> forbiddenArea) {
+		BitSet result = new BitSet(g.vertexSet().size());
+		int i = 0;
+		for (Point point : g.vertexSet()) {
+			if (forbiddenArea.contains(point))
+				result.set(i);
+			++i;
+		}
+		return result;
 	}
     
     public static void main(String[] args) {

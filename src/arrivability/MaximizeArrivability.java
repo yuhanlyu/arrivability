@@ -14,7 +14,7 @@ public class MaximizeArrivability {
 
 	private static final Logger logger = Logger.getLogger(MaximizeArrivability.class.getName());
 	private static final int NUMBER_OF_GENERATED_PATHS = 100;
-	private int numberOfRobots = 2;
+	private int numberOfRobots;
 	private PathGeneration pg;
 	private PathSelection ps;
 	private PathImprovement pi;
@@ -25,9 +25,10 @@ public class MaximizeArrivability {
 	 * @param s path selector
 	 * @param i path enhance
 	 */
-	public MaximizeArrivability(Graph<Point> g, FailureRate fr) {
+	public MaximizeArrivability(Graph<Point> g, FailureRate fr, int number) {
 		Map<Point, Map<Point, Point>> next = new HashMap<>();
 		Map<Point, Map<Point, Double>> distance = g.allPairsSP(next);
+		numberOfRobots = number;
 		pg = new PathGeneration(g);
 		ps = new PathSelection(fr, distance);
 		pi = new PathImprovement(g, fr, distance, next);
