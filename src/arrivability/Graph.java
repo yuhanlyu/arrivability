@@ -33,13 +33,27 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Add a vertex
-     * @param vertex
+     * @param vertex the vertex to be added
      */
     public void addVertex(V vertex) {
     	if (vertices.contains(vertex))
     		throw new IllegalArgumentException("Insert a duplicate vertex.");
     	vertices.add(vertex);
     	neighbors.put(vertex, new HashMap<>());
+    }
+    
+    /**
+     * Remove a vertex
+     * @param vertex the vertex to be removed
+     */
+    public void removeVertex(V vertex) {
+    	if (!vertices.contains(vertex))
+    		throw new IllegalArgumentException("Remove a non-existing vertex.");
+    	for (V neighbor : getNeighbors(vertex)) {
+    		neighbors.get(neighbor).remove(vertex);
+    	}
+    	neighbors.remove(vertex);
+    	vertices.remove(vertex);
     }
     
     /**
@@ -50,10 +64,6 @@ public class Graph <V extends Comparable<V>> {
     public void addEdge(V source, V target) {
     	if (!vertices.contains(source) || !vertices.contains(target))
     		throw new IllegalArgumentException("Insert an edge between non-existence vertices.");
-
-    	//edges.put(new E(source, target), 1.0);
-    	//edges.put(new E(target, source), 1.0);
-    	// Initialize unit cost edges
     	neighbors.get(source).put(target, 1.0);
     	neighbors.get(target).put(source, 1.0);
     }
@@ -111,13 +121,13 @@ public class Graph <V extends Comparable<V>> {
      */
     public double unweightedDistance(Iterable<V> vertexset, V target) {
     	for (V v : vertexset) {
-    		if (!vertices.contains(v))
+    		if (!vertexSet().contains(v))
         		throw new IllegalArgumentException("Path does not exist.");
     	}
     	
     	Map<V, Integer> distanceMap = new HashMap<>();
     	Queue<V> queue = new ArrayDeque<>();
-    	for (V v : vertices) {
+    	for (V v : vertexSet()) {
     		distanceMap.put(v, Integer.MAX_VALUE);
     	}
     	for (V v : vertexset) {

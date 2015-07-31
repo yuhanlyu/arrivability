@@ -30,8 +30,8 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	private static final int ROW = 25;
-	private static final int COLUMN = 25;
+	public static final int ROW = 25;
+	public static final int COLUMN = 25;
 	private static final int RADIUS = 4;
 	private static final int SHIFT = 50;
 	private static final int SEPARATION = 7;
@@ -46,7 +46,7 @@ public class MineField extends Application {
 	
 	// For minimizing failure rate
 	private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN);
-	private GridGraph g = new GridGraph(ROW, COLUMN);
+	private Graph<Point> g = GraphLoader.getGraph();
 	private FailureRate model = new FailureRate(fg, g, FAILURE_PROBABILITY);
 	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
 	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
@@ -77,6 +77,14 @@ public class MineField extends Application {
             circle.setStrokeType(StrokeType.CENTERED);
             circle.setStroke(Color.web("black", 0.5));
             circle.setStrokeWidth(2);
+            if (p.equals(source)) {
+            	circle.setStroke(Color.web("red", 0.5));
+                circle.setStrokeWidth(5);	
+            }
+            if (p.equals(target)) {
+            	circle.setStroke(Color.web("blue", 0.5));
+                circle.setStrokeWidth(5);
+            }
             circles.getChildren().add(circle);
             pointToCircle.put(p, circle);
             circleToPoint.put(circle, p);
