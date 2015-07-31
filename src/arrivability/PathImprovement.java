@@ -3,7 +3,6 @@ package arrivability;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -16,21 +15,21 @@ public class PathImprovement {
 	private Graph<Point> g;
 	private FailureRate fr;
 	private Map<Point, Map<Point, Double>> distance;
-	private Map<Point, Map<Point, Point>> next = new HashMap<>();
+	private Map<Point, Map<Point, Point>> parent;
 	
 	/**
 	 * Constructor
 	 * @param arg_g graph
 	 * @param arg_fr failure rate computation
 	 * @param arg_d distance between all pairs
-	 * @param arg_n next mapping
+	 * @param arg_p parent mapping
 	 */
 	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr,
 			Map<Point, Map<Point, Double>> arg_d, Map<Point, Map<Point, Point>> arg_n) {
 		g = arg_g;
 		fr = arg_fr;
 		distance = arg_d;
-		next = arg_n;
+		parent = arg_n;
 	}
 
 	/**
@@ -102,7 +101,7 @@ public class PathImprovement {
 	 */
 	private Path<Point> escape(Path<Point> path, int randomBegin, int randomEnd) {
 		logger.finer("Escape from " + path.toString() + " " + randomBegin + " " + randomEnd);
-		Path<Point> shortest = g.buildPathForward(path.get(randomBegin), path.get(randomEnd), next);
+		Path<Point> shortest = g.buildPathBackward(path.get(randomBegin), path.get(randomEnd), parent);
 	    Point midPoint = shortest.get(shortest.size() / 2);
 	    List<Point> points = new ArrayList<>();
 	    for (Point point : g.vertexSet())
@@ -116,8 +115,8 @@ public class PathImprovement {
 	    
 	    int randomIndex = random.nextInt(points.size());
 	    Point randomPoint = points.get(randomIndex);
-	    Path<Point> first = g.buildPathForward(path.get(randomBegin), randomPoint, next);
-	    Path<Point> second = g.buildPathForward(randomPoint, path.get(randomEnd), next);
+	    Path<Point> first = g.buildPathBackward(path.get(randomBegin), randomPoint, parent);
+	    Path<Point> second = g.buildPathBackward(randomPoint, path.get(randomEnd), parent);
 	    second = second.slice(1, second.size());
 	    if (first.contains(second))
 	    	return null;
@@ -134,17 +133,15 @@ public class PathImprovement {
 		logger.fine("Try to improve");
 		double original = fr.arrivability(solution);
 		double max = Double.NEGATIVE_INFINITY;
-		List<Collection<Point>> forbiddenAreas = fr.forbiddenAreas(solution);
-		List<BitSet> bitsets = fr.fromAreasToBitSets(forbiddenAreas);
+		List<BitSet> bitsets = fr.fromAreasToBitSets(fr.forbiddenAreas(solution));
 		Path<Point> newPath = null;
 		int removeIndex = -1;
 		for (int i = 0; i < solution.size(); ++i) {
-			//Collection<Point> oldArea = forbiddenAreas.get(i);
 			BitSet oldSet = bitsets.get(i);
 			Path<Point> path = solution.get(i);
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
-					Path<Point> subpath = g.buildPathForward(path.get(j), path.get(k), next);
+					Path<Point> subpath = g.buildPathBackward(path.get(j), path.get(k), parent);
 					Path<Point> first = path.slice(0, j);
 					if (subpath.contains(first))
 						continue;
@@ -153,10 +150,7 @@ public class PathImprovement {
 						continue;
 					first.concate(subpath);
 					first.concate(last);
-					//forbiddenAreas.set(i, fr.forbiddenArea(first));
-					//bitsets.set(i, fr.fromAreaToBitSet(fr.forbiddenArea(first)));
 					bitsets.set(i, fr.fromPathToBitSet(first));
-					//double arrivability = fr.arrivabilityFromForbidden(forbiddenAreas);
 					double arrivability = fr.arrivabilityFromBitSets(bitsets);
 					if (arrivability > max) {
 						max = arrivability;
@@ -166,7 +160,6 @@ public class PathImprovement {
 				}
 			}
 			bitsets.set(i, oldSet);
-			//forbiddenAreas.set(i, oldArea);
 		}
 		if (max > original) {
 			solution.set(removeIndex, newPath);

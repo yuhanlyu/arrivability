@@ -353,12 +353,14 @@ public class Graph <V extends Comparable<V>> {
      * @return distance map
      */
     public Map<V, Map<V, Double>> unweightedAPSP(Map<V, Map<V, V>> parent) {
+    	logger.info("APSP begins");
     	Map<V, Map<V, Double>> distance = new HashMap<>();
     	for (V vertex : vertexSet()) {
     		Map<V, V> p = new HashMap<>();
     		distance.put(vertex, unweightedShortestPath(vertex, p));
     		parent.put(vertex, p);
     	}
+    	logger.info("APSP finished");
     	return distance;
     }
     
@@ -412,6 +414,7 @@ public class Graph <V extends Comparable<V>> {
 	 * Reconstruct the path from next mapping
 	 * @param source source point
 	 * @param target target point
+	 * @param next next mapping
 	 * @return a shortest path from source to target
 	 */
 	public Path<V> buildPathForward(V source, V target, Map<V, Map<V, V>> next) {
@@ -426,18 +429,18 @@ public class Graph <V extends Comparable<V>> {
 	}
 	
 	/**
-	 * 
-	 * @param source
-	 * @param target
-	 * @param parent
-	 * @return
+	 * Reconstruct the path from parent mapping
+	 * @param source source point
+	 * @param target target point
+	 * @param parent parent mapping
+	 * @return a shortest path from source to target
 	 */
-	public Path<V> buildPathBackword(V source, V target, Map<V, Map<V, V>> parent) {
+	public Path<V> buildPathBackward(V source, V target, Map<V, Map<V, V>> parent) {
 		Deque<V> stack = new ArrayDeque<>();
 		V current = target;
 		while (current != null) {
 			stack.push(current);
-			current = parent.get(current).get(source);
+			current = parent.get(source).get(current);
 		}
 		Path<V> path = new Path<>();
 		while (!stack.isEmpty()) {
