@@ -28,6 +28,8 @@ public class MaximizeArrivability {
 	public MaximizeArrivability(Graph<Point> g, FailureRate fr, int number) {
 		Map<Point, Map<Point, Point>> next = new HashMap<>();
 		Map<Point, Map<Point, Double>> distance = g.allPairsSP(next);
+		Map<Point, Map<Point, Point>> parent = new HashMap<>();
+		Map<Point, Map<Point, Double>> distance2 = g.unweightedAPSP(parent);
 		numberOfRobots = number;
 		pg = new PathGeneration(g);
 		ps = new PathSelection(fr, distance);

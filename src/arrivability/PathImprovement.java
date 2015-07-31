@@ -102,7 +102,7 @@ public class PathImprovement {
 	 */
 	private Path<Point> escape(Path<Point> path, int randomBegin, int randomEnd) {
 		logger.finer("Escape from " + path.toString() + " " + randomBegin + " " + randomEnd);
-		Path<Point> shortest = shortestPath(path.get(randomBegin), path.get(randomEnd));
+		Path<Point> shortest = g.buildPathForward(path.get(randomBegin), path.get(randomEnd), next);
 	    Point midPoint = shortest.get(shortest.size() / 2);
 	    List<Point> points = new ArrayList<>();
 	    for (Point point : g.vertexSet())
@@ -116,8 +116,8 @@ public class PathImprovement {
 	    
 	    int randomIndex = random.nextInt(points.size());
 	    Point randomPoint = points.get(randomIndex);
-	    Path<Point> first = shortestPath(path.get(randomBegin), randomPoint);
-	    Path<Point> second = shortestPath(randomPoint, path.get(randomEnd));
+	    Path<Point> first = g.buildPathForward(path.get(randomBegin), randomPoint, next);
+	    Path<Point> second = g.buildPathForward(randomPoint, path.get(randomEnd), next);
 	    second = second.slice(1, second.size());
 	    if (first.contains(second))
 	    	return null;
@@ -144,7 +144,7 @@ public class PathImprovement {
 			Path<Point> path = solution.get(i);
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
-					Path<Point> subpath = shortestPath(path.get(j), path.get(k));
+					Path<Point> subpath = g.buildPathForward(path.get(j), path.get(k), next);
 					Path<Point> first = path.slice(0, j);
 					if (subpath.contains(first))
 						continue;
@@ -173,22 +173,5 @@ public class PathImprovement {
 			return true;
 		}
 		return false;
-	}
-	
-	/**
-	 * Reconstruct the path from next mapping
-	 * @param source source point
-	 * @param target target point
-	 * @return a shortest path from source to target
-	 */
-	private Path<Point> shortestPath(Point source, Point target) {
-		Point current = source;
-		Path<Point> result = new Path<>();
-		result.addVertex(source);
-		while (!current.equals(target)) {
-			current = next.get(current).get(target);
-			result.addVertex(current);
-		}
-		return result;
 	}
 }

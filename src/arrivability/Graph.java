@@ -200,6 +200,41 @@ public class Graph <V extends Comparable<V>> {
     }
     
     /**
+     * Compute unweighted shoretst paths from source to all vertices
+     * @param source source node
+     * @param parent mapping of parent
+     * @return distance map
+     */
+    public Map<V, Double> unweightedShortestPath(V source, Map<V, V> parent) {
+    	if (!contains(source))
+    		throw new IllegalArgumentException("Source or target does not exist");
+    	Map<V, Double> distanceMap = new HashMap<>();
+    	Queue<V> queue = new ArrayDeque<>();
+    	for (V v : vertexSet()) {
+    		distanceMap.put(v, Double.POSITIVE_INFINITY);
+    	}
+    	distanceMap.put(source, 0.0);
+    	parent.put(source, null);
+    	queue.add(source);
+    	
+    	while (!queue.isEmpty()) {
+    	    V node = queue.poll();
+    	    
+    	    double newDistance = distanceMap.get(node) + 1.0;
+            // Visit each edge exiting u
+            for (V neighbor : getNeighbors(node)) {
+                
+                if (Double.isInfinite(distanceMap.get(neighbor))) {
+    		        distanceMap.put(neighbor, newDistance);
+    		        queue.add(neighbor);
+    		        parent.put(neighbor, node);
+    		    }
+            }
+        }
+    	return distanceMap;
+    }
+    
+    /**
      * Find the shortest distance from source to target with node-weights
      * @param source the source node
      * @param target the target node
@@ -313,6 +348,21 @@ public class Graph <V extends Comparable<V>> {
     }
     
     /**
+     * Unweighted all pairs shortest path
+     * @param parent parent map
+     * @return distance map
+     */
+    public Map<V, Map<V, Double>> unweightedAPSP(Map<V, Map<V, V>> parent) {
+    	Map<V, Map<V, Double>> distance = new HashMap<>();
+    	for (V vertex : vertexSet()) {
+    		Map<V, V> p = new HashMap<>();
+    		distance.put(vertex, unweightedShortestPath(vertex, p));
+    		parent.put(vertex, p);
+    	}
+    	return distance;
+    }
+    
+    /**
      * All pairs shortest path
      * @param next vertex mapping
      * @return distance mapping
@@ -356,5 +406,43 @@ public class Graph <V extends Comparable<V>> {
     	}
     	logger.info("APSP finished");
     	return distance;
-    } 
+    }
+    
+    /**
+	 * Reconstruct the path from next mapping
+	 * @param source source point
+	 * @param target target point
+	 * @return a shortest path from source to target
+	 */
+	public Path<V> buildPathForward(V source, V target, Map<V, Map<V, V>> next) {
+		V current = source;
+		Path<V> result = new Path<>();
+		result.addVertex(source);
+		while (!current.equals(target)) {
+			current = next.get(current).get(target);
+			result.addVertex(current);
+		}
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @param source
+	 * @param target
+	 * @param parent
+	 * @return
+	 */
+	public Path<V> buildPathBackword(V source, V target, Map<V, Map<V, V>> parent) {
+		Deque<V> stack = new ArrayDeque<>();
+		V current = target;
+		while (current != null) {
+			stack.push(current);
+			current = parent.get(current).get(source);
+		}
+		Path<V> path = new Path<>();
+		while (!stack.isEmpty()) {
+			path.addVertex(stack.pop());
+		}
+		return path;
+	}
 }

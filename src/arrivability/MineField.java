@@ -37,7 +37,7 @@ public class MineField extends Application {
 	private static final int SEPARATION = 7;
 
 	// For arrivability model
-	private static final int NUMBER_OF_BLOCKERS = 1;
+	private static final int NUMBER_OF_BLOCKERS = 5;
 	private static final int MINE_RADIUS = 1;
 	private static final int MAX_UNION = 37;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
@@ -55,8 +55,8 @@ public class MineField extends Application {
 	private int numberOfPaths = 10;
 	
 	// For maximizing arrivability
-	private int numberOfRobots = 3;
-	private MaximizeArrivability ma = new MaximizeArrivability(g, model, numberOfRobots);
+	private static final int NUMBER_OF_ROBOTS = 4;
+	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS);
 	
 	// For auxiliary information
 	private Text info = new Text(10, 10, "#Rows is " + ROW + " #Columns is " + COLUMN);
