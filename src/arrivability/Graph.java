@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -22,11 +23,13 @@ import java.util.stream.Collectors;
  */
 public class Graph <V extends Comparable<V>> {
 	private static final Logger logger = Logger.getLogger(Graph.class.getName());
-	private Collection<V> vertices = new HashSet<>();                    // all vertices
-	private Map<V, Map<V, Double>> neighbors = new HashMap<>();         // adjacent lists
+	private Collection<V> vertices = new HashSet<>();                        // all vertices
+	private Map<V, Map<V, Double>> neighbors = new HashMap<>();              // adjacent lists
+	private Map<V, Map<V, Double>> apspUnweightedDistance = new ConcurrentHashMap<>(); // unweighted all pairs shortest path distance
+	private Map<V, Map<V, V>> apspUnweightedParent = new ConcurrentHashMap<>();        // unweighted all pairs shortes path parent mapping
 	
 	/**
-     * Return the vertexset
+     * Return the vertex set
      * @return the vertex set
      */
     public Collection<V> vertexSet() {
@@ -175,6 +178,9 @@ public class Graph <V extends Comparable<V>> {
     public double unweightedDistance(V source, V target) {
     	if (!contains(source) || !contains(target))
     		throw new IllegalArgumentException("Source or target does not exist");
+    	if (apspUnweightedDistance.containsKey(source)) {
+    		return apspUnweightedDistance.get(source).get(target);
+    	}
     	Map<V, Double> distanceMap = new HashMap<>();
     	Queue<V> queue = new ArrayDeque<>();
     	for (V v : vertexSet()) {
@@ -234,6 +240,38 @@ public class Graph <V extends Comparable<V>> {
             }
         }
     	return distanceMap;
+    }
+    
+    /**
+     * Path query between two points
+     * @param source source point
+     * @param target target point
+     * @return a path connecting source and target
+     */
+    public Path<V> pathQuery(V source, V target) {
+    	if (!apspUnweightedDistance.containsKey(source)) {
+    		Map<V, V> parent = new HashMap<>();
+        	Map<V, Double> distance = unweightedShortestPath(source, parent);
+        	apspUnweightedDistance.put(source, distance);
+        	apspUnweightedParent.put(source, parent);
+    	}
+    	return buildPathBackward(source, target, apspUnweightedParent);
+    }
+    
+    /**
+     * Distance query between two points
+     * @param source sourece point
+     * @param target target point
+     * @return distance
+     */
+    public double distanceQuery(V source, V target) {
+    	if (!apspUnweightedDistance.containsKey(source)) {
+    		Map<V, V> parent = new HashMap<>();
+        	Map<V, Double> distance = unweightedShortestPath(source, parent);
+        	apspUnweightedDistance.put(source, distance);
+        	apspUnweightedParent.put(source, parent);
+    	}
+    	return apspUnweightedDistance.get(source).get(target);
     }
     
     /**
@@ -354,20 +392,22 @@ public class Graph <V extends Comparable<V>> {
      * @param parent parent map
      * @return distance map
      */
-    public Map<V, Map<V, Double>> unweightedAPSP(Map<V, Map<V, V>> parent) {
+    public void unweightedAPSP() {
+    	if (apspUnweightedDistance.size() == vertexSet().size())
+    		return;
     	logger.info("APSP begins");
     	List<Result> results = vertexSet().parallelStream().map(vertex -> {
     		Map<V, V> p = new HashMap<>();
     		Map<V, Double> d = unweightedShortestPath(vertex, p);
     		return new Result(vertex, d, p);
     	}).collect(Collectors.toList());
-    	Map<V, Map<V, Double>> distance = new HashMap<>();
+    	apspUnweightedDistance = new HashMap<>();
+    	apspUnweightedParent = new HashMap<>();
     	for (Result result: results) {
-    		distance.put(result.vertex, result.distance);
-    		parent.put(result.vertex, result.parent);
+    		apspUnweightedDistance.put(result.vertex, result.distance);
+    		apspUnweightedParent.put(result.vertex, result.parent);
     	}
     	logger.info("APSP finished");
-    	return distance;
     }
     
     /**

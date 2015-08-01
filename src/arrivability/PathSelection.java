@@ -2,7 +2,6 @@ package arrivability;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -12,8 +11,8 @@ import java.util.stream.IntStream;
 public class PathSelection {
 	
 	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
+	private Graph<Point> g;
 	private FailureRate fr;
-	private Map<Point, Map<Point, Double>> distance;
 	
 	/**
 	 * Constructor
@@ -21,9 +20,9 @@ public class PathSelection {
 	 * @param arg_fr failure rate computation
 	 * @param arg_d distance between all pairs
 	 */
-	public PathSelection(FailureRate arg_fr, Map<Point, Map<Point, Double>> arg_d) {
+	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr) {
+		g = arg_g;
 		fr = arg_fr;
-		distance = arg_d;
 	}
 
 	/**
@@ -80,7 +79,7 @@ public class PathSelection {
 	 * @param objective objective function
 	 * @return true if improved, flase otherwise
 	 */
-	private boolean increase(List<Path<Point>> initial, List<Path<Point>> candidates, 
+	private static boolean increase(List<Path<Point>> initial, List<Path<Point>> candidates, 
 			Function<List<Path<Point>>, Double> objective) {
 		Result result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
 			List<Path<Point>> solution = Path.clonePaths(initial);
@@ -237,7 +236,7 @@ public class PathSelection {
     	for (Point p1 : path1) {
     		int j = 1;
     		for (Point p2 : path2) {
-    			fre[i][j] = Math.max(distance.get(p1).get(p2), 
+    			fre[i][j] = Math.max(g.distanceQuery(p1, p2), 
     					Math.min(Math.min(fre[i][j-1], fre[i-1][j]), fre[i-1][j-1]));
     			++j;
     		}

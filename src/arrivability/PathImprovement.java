@@ -3,7 +3,6 @@ package arrivability;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -15,8 +14,6 @@ public class PathImprovement {
 	private static final int NUMBER_OF_ITERATIONS = 100;
 	private Graph<Point> g;
 	private FailureRate fr;
-	private Map<Point, Map<Point, Double>> distance;
-	private Map<Point, Map<Point, Point>> parent;
 	
 	/**
 	 * Constructor
@@ -25,12 +22,9 @@ public class PathImprovement {
 	 * @param arg_d distance between all pairs
 	 * @param arg_p parent mapping
 	 */
-	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr,
-			Map<Point, Map<Point, Double>> arg_d, Map<Point, Map<Point, Point>> arg_n) {
+	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr) {
 		g = arg_g;
 		fr = arg_fr;
-		distance = arg_d;
-		parent = arg_n;
 	}
 
 	/**
@@ -102,11 +96,13 @@ public class PathImprovement {
 	 */
 	private Path<Point> escape(Path<Point> path, int randomBegin, int randomEnd) {
 		logger.finer("Escape from " + path.toString() + " " + randomBegin + " " + randomEnd);
-		Path<Point> shortest = g.buildPathBackward(path.get(randomBegin), path.get(randomEnd), parent);
+		//Path<Point> shortest = g.buildPathBackward(path.get(randomBegin), path.get(randomEnd), parent);
+		Path<Point> shortest = g.pathQuery(path.get(randomBegin), path.get(randomEnd));
 	    Point midPoint = shortest.get(shortest.size() / 2);
 	    List<Point> points = new ArrayList<>();
 	    for (Point point : g.vertexSet())
-	    	if (distance.get(midPoint).get(point) <= shortest.size() - shortest.size() / 2) {
+	    	//if (distance.get(midPoint).get(point) <= shortest.size() - shortest.size() / 2) {
+	    	if (g.distanceQuery(midPoint, point) <= shortest.size() - shortest.size() / 2) {
 	    		if (!path.contains(point))
 	    			points.add(point);
 	    	}
@@ -116,8 +112,10 @@ public class PathImprovement {
 	    
 	    int randomIndex = random.nextInt(points.size());
 	    Point randomPoint = points.get(randomIndex);
-	    Path<Point> first = g.buildPathBackward(path.get(randomBegin), randomPoint, parent);
-	    Path<Point> second = g.buildPathBackward(randomPoint, path.get(randomEnd), parent);
+	    //Path<Point> first = g.buildPathBackward(path.get(randomBegin), randomPoint, parent);
+	    //Path<Point> second = g.buildPathBackward(randomPoint, path.get(randomEnd), parent);
+	    Path<Point> first = g.pathQuery(path.get(randomBegin), randomPoint);
+	    Path<Point> second = g.pathQuery(randomPoint, path.get(randomEnd));
 	    second = second.slice(1, second.size());
 	    if (first.contains(second))
 	    	return null;
@@ -138,7 +136,8 @@ public class PathImprovement {
 			Path<Point> path = initial.get(i), newPath = null;
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
-					Path<Point> subpath = g.buildPathBackward(path.get(j), path.get(k), parent);
+					//Path<Point> subpath = g.buildPathBackward(path.get(j), path.get(k), parent);
+					Path<Point> subpath = g.pathQuery(path.get(j), path.get(k));
 					Path<Point> first = path.slice(0, j);
 					if (subpath.contains(first))
 						continue;
