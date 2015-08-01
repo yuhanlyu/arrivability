@@ -2,17 +2,21 @@ package arrivability;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 
 public class PathSelection {
 	
 	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
 	private Graph<Point> g;
 	private FailureRate fr;
+	private Map<Path<Point>, Map<Path<Point>, Double>> distanceMap = new ConcurrentHashMap<>();
 	
 	/**
 	 * Constructor
@@ -51,7 +55,7 @@ public class PathSelection {
 	private List<Path<Point>> initialSolution(List<Path<Point>> candidates, int numberOfRobots) {
 		//return randomK(paths, numberOfRobots);
 		//return maxNeighborDistance(candidates, numberOfRobots);
-		return maxDistance(candidates, numberOfRobots, this::sumNeighborDistance);
+		return maxObj(candidates, numberOfRobots, this::sumNeighborDistance);
 	}
 	
 	/**
@@ -61,7 +65,7 @@ public class PathSelection {
 	 * @param objective objective function
 	 * @return an initial solution
 	 */
-	private List<Path<Point>> maxDistance(List<Path<Point>> candidates, int numberOfRobots, 
+	private List<Path<Point>> maxObj(List<Path<Point>> candidates, int numberOfRobots, 
 			Function<List<Path<Point>>, Double> objective) {
 
 		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
@@ -225,6 +229,9 @@ public class PathSelection {
 	 * @return the distance
 	 */
 	private double distance(Path<Point> path1, Path<Point> path2) {
+		if (distanceMap.containsKey(path1) && distanceMap.get(path1).containsKey(path2)) {
+			return distanceMap.get(path1).get(path2);
+		}
 		int m1 = path1.size(), m2 = path2.size();
 		double[][] fre = new double[m1 + 1][m2 + 1];
 		for (int i = 1; i <= m2; i++) 
@@ -242,6 +249,14 @@ public class PathSelection {
     		}
     		++i;
     	}
+    	if (!distanceMap.containsKey(path1)) {
+    		distanceMap.put(path1, new ConcurrentHashMap<>());
+    	}
+    	if (!distanceMap.containsKey(path2)) {
+    		distanceMap.put(path2, new ConcurrentHashMap<>());
+    	}
+    	distanceMap.get(path1).put(path2, fre[m1][m2]);
+    	distanceMap.get(path2).put(path1, fre[m1][m2]);
     	return fre[m1][m2];
 	}
 	
