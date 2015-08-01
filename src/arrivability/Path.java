@@ -140,6 +140,27 @@ public class Path<V> implements Iterable<V> {
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		Path<V> rhs = (Path<V>)obj;
+		if (rhs.size() != size())
+			return false;
+		for (int i = 0; i < size(); ++i)
+			if (!get(i).equals(rhs.get(i)))
+				return false;
+		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		int result = 0;
+		for (V point : points) {
+			result <<= 1;
+			result ^= point.hashCode();
+		}
+		return result;
+	}
+	
+	@Override
 	public Iterator<V> iterator() {
 		return points.iterator();
 	}

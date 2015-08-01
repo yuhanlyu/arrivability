@@ -3,7 +3,9 @@ package arrivability;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -14,13 +16,12 @@ public class PathImprovement {
 	private static final int NUMBER_OF_ITERATIONS = 100;
 	private Graph<Point> g;
 	private FailureRate fr;
+	private Map<ShortCutKey, ShortCutResult> cache = new ConcurrentHashMap<>();
 	
 	/**
 	 * Constructor
 	 * @param arg_g graph
 	 * @param arg_fr failure rate computation
-	 * @param arg_d distance between all pairs
-	 * @param arg_p parent mapping
 	 */
 	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr) {
 		g = arg_g;
@@ -96,12 +97,10 @@ public class PathImprovement {
 	 */
 	private Path<Point> escape(Path<Point> path, int randomBegin, int randomEnd) {
 		logger.finer("Escape from " + path.toString() + " " + randomBegin + " " + randomEnd);
-		//Path<Point> shortest = g.buildPathBackward(path.get(randomBegin), path.get(randomEnd), parent);
 		Path<Point> shortest = g.pathQuery(path.get(randomBegin), path.get(randomEnd));
 	    Point midPoint = shortest.get(shortest.size() / 2);
 	    List<Point> points = new ArrayList<>();
 	    for (Point point : g.vertexSet())
-	    	//if (distance.get(midPoint).get(point) <= shortest.size() - shortest.size() / 2) {
 	    	if (g.distanceQuery(midPoint, point) <= shortest.size() - shortest.size() / 2) {
 	    		if (!path.contains(point))
 	    			points.add(point);
@@ -112,8 +111,6 @@ public class PathImprovement {
 	    
 	    int randomIndex = random.nextInt(points.size());
 	    Point randomPoint = points.get(randomIndex);
-	    //Path<Point> first = g.buildPathBackward(path.get(randomBegin), randomPoint, parent);
-	    //Path<Point> second = g.buildPathBackward(randomPoint, path.get(randomEnd), parent);
 	    Path<Point> first = g.pathQuery(path.get(randomBegin), randomPoint);
 	    Path<Point> second = g.pathQuery(randomPoint, path.get(randomEnd));
 	    second = second.slice(1, second.size());
@@ -136,21 +133,14 @@ public class PathImprovement {
 			Path<Point> path = initial.get(i), newPath = null;
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
-					//Path<Point> subpath = g.buildPathBackward(path.get(j), path.get(k), parent);
-					Path<Point> subpath = g.pathQuery(path.get(j), path.get(k));
-					Path<Point> first = path.slice(0, j);
-					if (subpath.contains(first))
+					ShortCutResult r = shortcut(path, j, k);
+					if (r == null)
 						continue;
-					Path<Point> last = path.slice(k + 1, path.size());
-					if (subpath.contains(last))
-						continue;
-					first.concate(subpath);
-					first.concate(last);
-					bitsets.set(i, fr.fromPathToBitSet(first));
+					bitsets.set(i, r.area);
 					double arrivability = fr.arrivabilityFromBitSets(bitsets);
 					if (arrivability > obj) {
 						obj = arrivability;
-						newPath = first;
+						newPath = r.path;
 					}
 				}
 			}
@@ -162,6 +152,86 @@ public class PathImprovement {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Short cut the path
+	 * @param path a path to be shortcut
+	 * @param j the start index of shortcut
+	 * @param k the end index of shortcut
+	 * @return a new path if shortcut is available, null otherwise
+	 */
+	private ShortCutResult shortcut(Path<Point> path, int j, int k) {
+		ShortCutKey key = new ShortCutKey(path, j, k);
+		if (cache.containsKey(key)) {
+			return cache.get(key);				
+		}
+		Path<Point> subpath = g.pathQuery(path.get(j), path.get(k));
+		Path<Point> first = path.slice(0, j);
+		if (subpath.contains(first))
+			return null;
+		Path<Point> last = path.slice(k + 1, path.size());
+		if (subpath.contains(last))
+			return null;
+		first.concate(subpath);
+		first.concate(last);
+		ShortCutResult r = new ShortCutResult(first, fr.fromPathToBitSet(first));
+		cache.put(key, r);
+		return r;
+	}
+	
+	/**
+	 * Key for the cache
+	 * @author yuhanlyu
+	 *
+	 */
+	private static final class ShortCutKey {
+		public Path<Point> path;
+		public int j;
+		public int k;
+		
+		/**
+		 * Constructor
+		 * @param p path
+		 * @param arg_j begin index
+		 * @param arg_k end index
+		 */
+		public ShortCutKey(Path<Point> p, int arg_j, int arg_k) {
+			path = p;
+			j = arg_j;
+			k = arg_k;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			ShortCutKey rhs = (ShortCutKey) obj;
+			return j == rhs.j && k == rhs.k && path == rhs.path;
+		}
+		
+		@Override
+		public int hashCode() {
+			return path.hashCode() ^ (j << 16) ^ k;
+		}
+	}
+	
+	/**
+	 * Result of the short cut
+	 * @author yuhanlyu
+	 *
+	 */
+	private static final class ShortCutResult {
+		public Path<Point> path;
+		public BitSet area;
+		
+		/**
+		 * Constructor
+		 * @param p a path
+		 * @param a bitset
+		 */
+		public ShortCutResult(Path<Point> p, BitSet a) {
+			path = p;
+			area = a;
+		}
 	}
 	
 	/**

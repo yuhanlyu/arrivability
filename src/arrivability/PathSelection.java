@@ -22,7 +22,6 @@ public class PathSelection {
 	 * Constructor
 	 * @param arg_g graph
 	 * @param arg_fr failure rate computation
-	 * @param arg_d distance between all pairs
 	 */
 	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr) {
 		g = arg_g;
