@@ -148,6 +148,12 @@ public class PathSelection {
 		public int removeIndex;
 		public int newIndex;
 		
+		/**
+		 * Constructor
+		 * @param s objective value
+		 * @param ri remove index
+		 * @param ni new index
+		 */
 		public Result(double s, int ri, int ni) {
 			sum = s;
 			removeIndex = ri;
@@ -203,6 +209,66 @@ public class PathSelection {
 				sum += distance(path1, path2);
 		}
 		return sum;
+	}
+	
+	/**
+	 * Compute the distance between two paths
+	 * @param path1 first path
+	 * @param path2 second path
+	 * @return the distance
+	 */
+	private double distance(Path<Point> path1, Path<Point> path2) {
+		int m1 = path1.size(), m2 = path2.size();
+		double[][] fre = new double[m1 + 1][m2 + 1];
+		for (int i = 1; i <= m2; i++) 
+			fre[0][i] = Double.POSITIVE_INFINITY;
+    	for (int i=1; i <= m1; i++) 
+    		fre[i][0] = Double.POSITIVE_INFINITY;
+    	
+    	int i = 1;
+    	for (Point p1 : path1) {
+    		int j = 1;
+    		for (Point p2 : path2) {
+    			fre[i][j] = Math.max(distance.get(p1).get(p2), 
+    					Math.min(Math.min(fre[i][j-1], fre[i-1][j]), fre[i-1][j-1]));
+    			++j;
+    		}
+    		++i;
+    	}
+    	return fre[m1][m2];
+	}
+	
+	/**
+	 * Pick k random paths
+	 * @param candidates a set of paths
+	 * @param numberOfRoboots number of selected paths
+	 * @return a set of paths
+	 */
+	private static List<Path<Point>> randomK(List<Path<Point>> candidates, int numberOfRobots) {
+		Path<Point>[] result = new Path[numberOfRobots];
+		Random random = new Random();
+		for (int count = 0; count < numberOfRobots; ++count) {
+			result[count] = candidates.get(random.nextInt(candidates.size()));
+		}
+		return Arrays.asList(result);
+	}
+	
+	/**
+	 * Pick first K paths
+	 * @param candidates a set of paths
+	 * @param numberOfRoboots number of selected paths
+	 * @return a set of paths
+	 */
+	private List<Path<Point>> firstK(List<Path<Point>> candidates, int numberOfRobots) {
+		Path<Point>[] result = new Path[numberOfRobots];
+		int count = 0;
+		for (Path<Point> path : candidates) {
+			result[count] = path;
+			++count;
+			if (count == numberOfRobots)
+				break;
+		}
+		return Arrays.asList(result);
 	}
 	
 	/**
@@ -368,64 +434,4 @@ public class PathSelection {
 		}
 		return false;
 	}*/
-	
-	/**
-	 * Compute the distance between two paths
-	 * @param path1 first path
-	 * @param path2 second path
-	 * @return the distance
-	 */
-	private double distance(Path<Point> path1, Path<Point> path2) {
-		int m1 = path1.size(), m2 = path2.size();
-		double[][] fre = new double[m1 + 1][m2 + 1];
-		for (int i = 1; i <= m2; i++) 
-			fre[0][i] = Double.POSITIVE_INFINITY;
-    	for (int i=1; i <= m1; i++) 
-    		fre[i][0] = Double.POSITIVE_INFINITY;
-    	
-    	int i = 1;
-    	for (Point p1 : path1) {
-    		int j = 1;
-    		for (Point p2 : path2) {
-    			fre[i][j] = Math.max(distance.get(p1).get(p2), 
-    					Math.min(Math.min(fre[i][j-1], fre[i-1][j]), fre[i-1][j-1]));
-    			++j;
-    		}
-    		++i;
-    	}
-    	return fre[m1][m2];
-	}
-	
-	/**
-	 * Pick k random paths
-	 * @param candidates a set of paths
-	 * @param numberOfRoboots number of selected paths
-	 * @return a set of paths
-	 */
-	private static List<Path<Point>> randomK(List<Path<Point>> candidates, int numberOfRobots) {
-		Path<Point>[] result = new Path[numberOfRobots];
-		Random random = new Random();
-		for (int count = 0; count < numberOfRobots; ++count) {
-			result[count] = candidates.get(random.nextInt(candidates.size()));
-		}
-		return Arrays.asList(result);
-	}
-	
-	/**
-	 * Pick first K paths
-	 * @param candidates a set of paths
-	 * @param numberOfRoboots number of selected paths
-	 * @return a set of paths
-	 */
-	private List<Path<Point>> firstK(List<Path<Point>> candidates, int numberOfRobots) {
-		Path<Point>[] result = new Path[numberOfRobots];
-		int count = 0;
-		for (Path<Point> path : candidates) {
-			result[count] = path;
-			++count;
-			if (count == numberOfRobots)
-				break;
-		}
-		return Arrays.asList(result);
-	}
 }

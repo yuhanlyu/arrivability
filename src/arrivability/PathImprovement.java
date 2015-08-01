@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PathImprovement {
 	
@@ -128,16 +130,12 @@ public class PathImprovement {
 	 * @param solution current solution
 	 * @return true if solution is improved, false otherwise 
 	 */
-	private boolean canImprove(List<Path<Point>> solution) {
+	private boolean canImprove(List<Path<Point>> initial) {
 		logger.fine("Try to improve");
-		double original = fr.arrivability(solution);
-		double max = Double.NEGATIVE_INFINITY;
-		List<BitSet> bitsets = fr.fromAreasToBitSets(fr.forbiddenAreas(solution));
-		Path<Point> newPath = null;
-		int removeIndex = -1;
-		for (int i = 0; i < solution.size(); ++i) {
-			BitSet oldSet = bitsets.get(i);
-			Path<Point> path = solution.get(i);
+		Result result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
+			List<BitSet> bitsets = fr.fromAreasToBitSets(fr.forbiddenAreas(initial));
+			double obj = 0.0;
+			Path<Point> path = initial.get(i), newPath = null;
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
 					Path<Point> subpath = g.buildPathBackward(path.get(j), path.get(k), parent);
@@ -151,19 +149,42 @@ public class PathImprovement {
 					first.concate(last);
 					bitsets.set(i, fr.fromPathToBitSet(first));
 					double arrivability = fr.arrivabilityFromBitSets(bitsets);
-					if (arrivability > max) {
-						max = arrivability;
-						removeIndex = i;
+					if (arrivability > obj) {
+						obj = arrivability;
 						newPath = first;
 					}
 				}
 			}
-			bitsets.set(i, oldSet);
-		}
-		if (max > original) {
-			solution.set(removeIndex, newPath);
+			return new Result(obj, i, newPath);
+		}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
+		
+		if (result.sum > fr.arrivability(initial)) {
+			initial.set(result.removeIndex, result.newPath);
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * A class for holding result
+	 * @author yuhanlyu
+	 *
+	 */
+	private static final class Result {
+		public double sum;
+		public int removeIndex;
+		public Path<Point> newPath;
+		
+		/**
+		 * Constructor
+		 * @param s objective value
+		 * @param ri remove index
+		 * @param np new path
+		 */
+		public Result(double s, int ri, Path<Point> np) {
+			sum = s;
+			removeIndex = ri;
+			newPath = np;
+		}
 	}
 }

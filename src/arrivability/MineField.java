@@ -31,11 +31,11 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	public static final int ROW = 25;
-	public static final int COLUMN = 25;
+	public static final int ROW = 50;
+	public static final int COLUMN = 50;
 	private static final int RADIUS = 4;
 	private static final int SHIFT = 50;
-	private static final int SEPARATION = 7;
+	private static final int SEPARATION = 3;
 
 	// For arrivability model
 	private static final int NUMBER_OF_BLOCKERS = 5;
@@ -56,7 +56,7 @@ public class MineField extends Application {
 	private int numberOfPaths = 10;
 	
 	// For maximizing arrivability
-	private static final int NUMBER_OF_ROBOTS = 4;
+	private static final int NUMBER_OF_ROBOTS = 6;
 	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS);
 	
 	// For auxiliary information
