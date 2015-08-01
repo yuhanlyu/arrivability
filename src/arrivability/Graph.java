@@ -6,11 +6,13 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Undirected graph
@@ -354,14 +356,41 @@ public class Graph <V extends Comparable<V>> {
      */
     public Map<V, Map<V, Double>> unweightedAPSP(Map<V, Map<V, V>> parent) {
     	logger.info("APSP begins");
-    	Map<V, Map<V, Double>> distance = new HashMap<>();
-    	for (V vertex : vertexSet()) {
+    	List<Result> results = vertexSet().parallelStream().map(vertex -> {
     		Map<V, V> p = new HashMap<>();
-    		distance.put(vertex, unweightedShortestPath(vertex, p));
-    		parent.put(vertex, p);
+    		Map<V, Double> d = unweightedShortestPath(vertex, p);
+    		return new Result(vertex, d, p);
+    	}).collect(Collectors.toList());
+    	Map<V, Map<V, Double>> distance = new HashMap<>();
+    	for (Result result: results) {
+    		distance.put(result.vertex, result.distance);
+    		parent.put(result.vertex, result.parent);
     	}
     	logger.info("APSP finished");
     	return distance;
+    }
+    
+    /**
+     * A class for holding result
+     * @author yuhanlyu
+     *
+     */
+    private final class Result {
+    	public V vertex;
+    	public Map<V, Double> distance;
+    	public Map<V, V> parent;
+    	
+    	/**
+    	 * Constructor
+    	 * @param v vetex 
+    	 * @param d distance mapping
+    	 * @param p parent mapping
+    	 */
+    	public Result(V v, Map<V, Double> d, Map<V, V> p) {
+    		vertex = v;
+    		distance = d;
+    		parent = p;
+    	}
     }
     
     /**
