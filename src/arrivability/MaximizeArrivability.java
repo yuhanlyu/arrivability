@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class MaximizeArrivability {
 
 	private static final Logger logger = Logger.getLogger(MaximizeArrivability.class.getName());
-	private static final int NUMBER_OF_GENERATED_PATHS = 200;
+	private static final int NUMBER_OF_GENERATED_PATHS = 100;
 	private int numberOfRobots;
 	private PathGeneration pg;
 	private PathSelection ps;

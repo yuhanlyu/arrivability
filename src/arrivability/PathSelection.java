@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PathSelection {
@@ -41,7 +43,166 @@ public class PathSelection {
 	 */
 	private List<Path<Point>> initialSolution(List<Path<Point>> candidates, int numberOfRobots) {
 		//return randomK(paths, numberOfRobots);
-		return maxNeighborDistance(candidates, numberOfRobots);
+		//return maxNeighborDistance(candidates, numberOfRobots);
+		return maxDistance(candidates, numberOfRobots, this::sumNeighborDistance);
+	}
+	
+	/**
+	 * Find a good initial solution based on maximum diversity problem
+	 * @param candidates all candidates
+	 * @param numberOfRobots number of robots
+	 * @param objective objective function
+	 * @return an initial solution
+	 */
+	private List<Path<Point>> maxDistance(List<Path<Point>> candidates, int numberOfRobots, 
+			Function<List<Path<Point>>, Double> objective) {
+
+		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
+		
+		while (increase(initial, candidates, objective)) {
+			;
+		}
+		return initial;
+	}
+	
+	/**
+	 * Try to increase the objective function
+	 * @param initial an initial solution
+	 * @param candidates all candidates
+	 * @param objective objective function
+	 * @return true if improved, flase otherwise
+	 */
+	private boolean increase(List<Path<Point>> initial, List<Path<Point>> candidates, 
+			Function<List<Path<Point>>, Double> objective) {
+		Result result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
+			List<Path<Point>> solution = Path.clonePaths(initial);
+			double obj = 0.0;
+			int index = 0;
+			for (int j = 0; j < candidates.size(); ++j) {
+				solution.set(i, candidates.get(j));
+				double newSum = objective.apply(solution);
+				if (newSum > obj) {
+					obj = newSum;
+					index = j;
+				}
+			}
+			return new Result(obj, i, index);
+		}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
+		
+		if (result.sum > objective.apply(initial)) {
+			initial.set(result.removeIndex, candidates.get(result.newIndex));
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Improve arrivability
+	 * @param initial an initial solution
+	 * @param candidates candidate paths
+	 * @return an improved solution
+	 */
+	private List<Path<Point>> localImprovement(List<Path<Point>> initial, List<Path<Point>> candidates) {
+		while (canImprove(initial, candidates)) {
+			;
+		}
+		return initial;
+	}
+	
+	/**
+	 * Improve arrivability
+	 * @param initial an initial solution
+	 * @param candidates candidate paths
+	 * @return true if initial solution is improved, false otherwise
+	 */
+	private boolean canImprove(List<Path<Point>> initial, List<Path<Point>> candidates) {
+		Result result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
+			List<Path<Point>> solution = Path.clonePaths(initial);
+			double obj = 0.0;
+			int index = 0;
+			for (int j = 0; j < candidates.size(); ++j) {
+				solution.set(i, candidates.get(j));
+				double newSum = fr.arrivability(solution);
+				if (newSum > obj) {
+					obj = newSum;
+					index = j;
+				}
+			}
+			return new Result(obj, i, index);
+		}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
+		
+		if (result.sum > fr.arrivability(initial)) {
+			initial.set(result.removeIndex, candidates.get(result.newIndex));
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * A class for holding result
+	 * @author yuhanlyu
+	 *
+	 */
+	private static final class Result {
+		public double sum;
+		public int removeIndex;
+		public int newIndex;
+		
+		public Result(double s, int ri, int ni) {
+			sum = s;
+			removeIndex = ri;
+			newIndex = ni;
+		}
+	}
+	
+	/**
+	 * Compute the sum of distance to nearest neighbors
+	 * @param paths solution
+	 * @return the sum of distance to nearest neighbors
+	 */
+	private double sumNeighborDistance(List<Path<Point>> paths) {
+		double sum = 0.0;
+		for (int i = 0; i < paths.size(); ++i) {
+			double min = Double.POSITIVE_INFINITY;
+			for (int j = 0; j < paths.size(); ++j) {
+				if (i == j) continue;
+				double distance = distance(paths.get(i), paths.get(j));
+				if (distance < min)
+					min = distance;
+			}
+			sum += min;
+		}
+		return sum;
+	}
+	
+	/**
+	 * Compute the sum of distance
+	 * @param paths a list of paths
+	 * @return the sum of distance
+	 */
+	private double minDistance(List<Path<Point>> paths) {
+		double min = Double.POSITIVE_INFINITY;
+		for (int i = 0; i < paths.size(); ++i)
+			for (int j = i + 1; j < paths.size(); ++j) {
+				double distance = distance(paths.get(i), paths.get(j));
+				if (distance < min)
+					min = distance;
+			}
+		return min;
+	}
+	
+	/**
+	 * Compute the sum of distance
+	 * @param paths a list of paths
+	 * @return the sum of distance
+	 */
+	private double sumDistance(List<Path<Point>> paths) {
+		double sum = 0.0;
+		for (Path<Point> path1 : paths) {
+			for (Path<Point> path2 : paths)
+				sum += distance(path1, path2);
+		}
+		return sum;
 	}
 	
 	/**
@@ -50,6 +211,7 @@ public class PathSelection {
 	 * @param numberOfRobots number of robots
 	 * @return a local maximum solution
 	 */
+	/*
 	private List<Path<Point>> maxNeighborDistance(List<Path<Point>> candidates, int numberOfRobots) {
 
 		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
@@ -58,7 +220,7 @@ public class PathSelection {
 			;
 		}
 		return initial;
-	}
+	}*/
 	
 	/**
 	 * Increase the sum of distance to nearest neighbors
@@ -66,6 +228,7 @@ public class PathSelection {
 	 * @param candidates candidate paths
 	 * @return true if sum of distance is increased, false otherwise
 	 */
+	/*
 	private boolean increaseNeighbor(List<Path<Point>> initial, List<Path<Point>> candidates) {
 		double[] sums = new double[initial.size()];
 		int[] newIndices = new int[initial.size()];
@@ -110,27 +273,7 @@ public class PathSelection {
 			return true;
 		}
 		return false;
-	}
-	
-	/**
-	 * Compute the sum of distance to nearest neighbors
-	 * @param paths solution
-	 * @return the sum of distance to nearest neighbors
-	 */
-	private double sumNeighborDistance(List<Path<Point>> paths) {
-		double sum = 0.0;
-		for (int i = 0; i < paths.size(); ++i) {
-			double min = Double.POSITIVE_INFINITY;
-			for (int j = 0; j < paths.size(); ++j) {
-				if (i == j) continue;
-				double distance = distance(paths.get(i), paths.get(j));
-				if (distance < min)
-					min = distance;
-			}
-			sum += min;
-		}
-		return sum;
-	}
+	}*/
 	
 	/**
 	 * Find a local maximum of minimum distance
@@ -138,6 +281,7 @@ public class PathSelection {
 	 * @param numberOfRobots number of robots
 	 * @return a solution
 	 */
+	/*
 	private List<Path<Point>> maxMinDistance(List<Path<Point>> candidates, int numberOfRobots) {
 		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
 		
@@ -145,7 +289,7 @@ public class PathSelection {
 			;
 		}
 		return initial;
-	}
+	}*/
 	
 	/**
 	 * Increase the minimum distance
@@ -153,6 +297,7 @@ public class PathSelection {
 	 * @param candidates candidates
 	 * @return true if minimum distance is increased, false otherwise
 	 */
+	/*
 	private boolean increaseMin(List<Path<Point>> initial, List<Path<Point>> candidates) {
 		double original = minDistance(initial);
 		double min = Double.NEGATIVE_INFINITY;
@@ -175,23 +320,7 @@ public class PathSelection {
 			return true;
 		}
 		return false;
-	}
-	
-	/**
-	 * Compute the sum of distance
-	 * @param paths a list of paths
-	 * @return the sum of distance
-	 */
-	private double minDistance(List<Path<Point>> paths) {
-		double min = Double.POSITIVE_INFINITY;
-		for (int i = 0; i < paths.size(); ++i)
-			for (int j = i + 1; j < paths.size(); ++j) {
-				double distance = distance(paths.get(i), paths.get(j));
-				if (distance < min)
-					min = distance;
-			}
-		return min;
-	}
+	}*/
 	
 	/**
 	 * Find a local maximum of sum of distances
@@ -199,6 +328,7 @@ public class PathSelection {
 	 * @param numberOfRobots number of robots
 	 * @return a solution
 	 */
+	/*
 	private List<Path<Point>> maxSumDistance(List<Path<Point>> candidates, int numberOfRobots) {
 		List<Path<Point>> initial = randomK(candidates, numberOfRobots);
 		
@@ -206,21 +336,7 @@ public class PathSelection {
 			;
 		}
 		return initial;
-	}
-	
-	/**
-	 * Compute the sum of distance
-	 * @param paths a list of paths
-	 * @return the sum of distance
-	 */
-	private double sumDistance(List<Path<Point>> paths) {
-		double sum = 0.0;
-		for (Path<Point> path1 : paths) {
-			for (Path<Point> path2 : paths)
-				sum += distance(path1, path2);
-		}
-		return sum;
-	}
+	}*/
 	
 	/**
 	 * Increase the sum of total distance
@@ -228,6 +344,7 @@ public class PathSelection {
 	 * @param candidates candidate paths
 	 * @return true if total sum is increased, false otherwise
 	 */
+	/*
 	private boolean increaseSum(List<Path<Point>> initial, List<Path<Point>> candidates) {
 		double sum = sumDistance(initial);
 		double max = Double.NEGATIVE_INFINITY;
@@ -250,7 +367,7 @@ public class PathSelection {
 			return true;
 		}
 		return false;
-	}
+	}*/
 	
 	/**
 	 * Compute the distance between two paths
@@ -310,70 +427,5 @@ public class PathSelection {
 				break;
 		}
 		return Arrays.asList(result);
-	}
-	
-	/**
-	 * Improve arrivability
-	 * @param initial an initial solution
-	 * @param candidates candidate paths
-	 * @return an improved solution
-	 */
-	private List<Path<Point>> localImprovement(List<Path<Point>> initial, List<Path<Point>> candidates) {
-		while (canImprove(initial, candidates)) {
-			;
-		}
-		return initial;
-	}
-	
-	/**
-	 * Improve arrivability
-	 * @param initial an initial solution
-	 * @param candidates candidate paths
-	 * @return true if initial solution is improved, false otherwise
-	 */
-	private boolean canImprove(List<Path<Point>> initial, List<Path<Point>> candidates) {
-		double[] sums = new double[initial.size()];
-		int[] newIndices = new int[initial.size()];
-		if (MineField.PARALLEL) {
-			IntStream.range(0, initial.size()).parallel().forEach(i -> {
-				List<Path<Point>> solution = Path.clonePaths(initial);
-				for (int j = 0; j < candidates.size(); ++j) {
-					solution.set(i, candidates.get(j));
-					double newSum = fr.arrivability(solution);
-					if (newSum > sums[i]) {
-						sums[i] = newSum;
-						newIndices[i] = j;
-					}
-				}
-			});
-		} else {
-			for (int i = 0; i < initial.size(); ++i) {
-				Path<Point> oldPath = initial.get(i);
-				for (int j = 0; j < candidates.size(); ++j) {
-					initial.set(i, candidates.get(j));
-					double newSum = fr.arrivability(initial);
-					if (newSum > sums[i]) {
-						sums[i] = newSum;
-						newIndices[i] = j;
-					}
-				}
-				initial.set(i, oldPath);
-			}
-		}
-		double sum = fr.arrivability(initial);
-		double max = Double.NEGATIVE_INFINITY;
-		int removeIndex = -1, newIndex = -1;
-		for (int i = 0; i < initial.size(); ++i) {
-			if (sums[i] > max) {
-				max = sums[i];
-				removeIndex = i;
-				newIndex = newIndices[i];
-			}
-		}
-		if (max > sum) {
-			initial.set(removeIndex, candidates.get(newIndex));
-			return true;
-		}
-		return false;
 	}
 }
