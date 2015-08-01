@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PathSelection {
 	
+	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
 	private FailureRate fr;
 	private Map<Point, Map<Point, Double>> distance;
 	
@@ -31,8 +33,14 @@ public class PathSelection {
 	 * @return a list of paths
 	 */
 	public List<Path<Point>> select(List<Path<Point>> candidates, int numberOfRobots) {
+		long startTime = System.nanoTime();
 		List<Path<Point>> sols = initialSolution(candidates, numberOfRobots);
-		return localImprovement(sols, candidates);
+		long initialTime = System.nanoTime();
+		logger.info("Initial solution takes " + (initialTime - startTime) / 1000000 + " milliseconds");
+		List<Path<Point>> result = localImprovement(sols, candidates);
+		long improveTime = System.nanoTime();
+		logger.info("Local improvementn takes " + (improveTime - initialTime) / 1000000 + " milliseconds");
+		return result;
 	}
 	
 	/**

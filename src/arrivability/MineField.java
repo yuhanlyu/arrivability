@@ -56,7 +56,7 @@ public class MineField extends Application {
 	private int numberOfPaths = 10;
 	
 	// For maximizing arrivability
-	private static final int NUMBER_OF_ROBOTS = 6;
+	private static final int NUMBER_OF_ROBOTS = 8;
 	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS);
 	
 	// For auxiliary information
