@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class MaximizeArrivability {
 
 	private static final Logger logger = Logger.getLogger(MaximizeArrivability.class.getName());
-	private static final int NUMBER_OF_GENERATED_PATHS = 100;
+	private static final int NUMBER_OF_GENERATED_PATHS = 200;
 	private int numberOfRobots;
 	private PathGeneration pg;
 	private PathSelection ps;
@@ -47,15 +47,15 @@ public class MaximizeArrivability {
 		long startTime = System.nanoTime();
 		List<Path<Point>> paths = pg.getPaths(NUMBER_OF_GENERATED_PATHS, source, target);
 		long generationTime = System.nanoTime();
+		logger.info("Path generation takes " + (generationTime - startTime) / 1000000 + " milliseconds");
 		List<Path<Point>> solution = ps.select(paths, numberOfRobots);
 		long selectionTime = System.nanoTime();
+		logger.info("Path selection takes " + (selectionTime - generationTime) / 1000000 + " milliseconds");
 		List<Path<Point>> improved = pi.improve(solution);
 		long endTime = System.nanoTime();
+		logger.info("Path improvement takes " + (endTime - selectionTime) / 1000000 + " milliseconds");
     	long duration = (endTime - startTime) / 1000000;
-    	logger.info("Search completed in " + duration + " milliseconds");
-    	logger.info("Path generation takes " + (generationTime - startTime) / 1000000 + " milliseconds");
-    	logger.info("Path selection takes " + (selectionTime - generationTime) / 1000000 + " milliseconds");
-    	logger.info("Path improvement takes " + (endTime - selectionTime) / 1000000 + " milliseconds");
+    	logger.info("Search completed in " + duration + " milliseconds");    	
     	return improved;
 	}
 }

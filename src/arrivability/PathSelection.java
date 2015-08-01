@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class PathSelection {
 	
@@ -66,21 +67,43 @@ public class PathSelection {
 	 * @return true if sum of distance is increased, false otherwise
 	 */
 	private boolean increaseNeighbor(List<Path<Point>> initial, List<Path<Point>> candidates) {
+		double[] sums = new double[initial.size()];
+		int[] newIndices = new int[initial.size()];
+		if (MineField.PARALLEL) {
+			IntStream.range(0, initial.size()).parallel().forEach(i -> {
+				List<Path<Point>> solution = Path.clonePaths(initial);
+				for (int j = 0; j < candidates.size(); ++j) {
+					solution.set(i, candidates.get(j));
+					double newSum = sumNeighborDistance(solution);
+					if (newSum > sums[i]) {
+						sums[i] = newSum;
+						newIndices[i] = j;
+					}
+				}
+			});
+		} else {
+			for (int i = 0; i < initial.size(); ++i) {
+				Path<Point> oldPath = initial.get(i);
+				for (int j = 0; j < candidates.size(); ++j) {
+					initial.set(i, candidates.get(j));
+					double newSum = sumNeighborDistance(initial);
+					if (newSum > sums[i]) {
+						sums[i] = newSum;
+						newIndices[i] = j;
+					}
+				}
+				initial.set(i, oldPath);
+			}
+		}
 		double sum = sumNeighborDistance(initial);
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
 		for (int i = 0; i < initial.size(); ++i) {
-			Path<Point> oldPath = initial.get(i);
-			for (int j = 0; j < candidates.size(); ++j) {
-				initial.set(i, candidates.get(j));
-				double newSum = sumNeighborDistance(initial);
-				if (newSum > max) {
-					max = newSum;
-					removeIndex = i;
-					newIndex = j;
-				}
+			if (sums[i] > max) {
+				max = sums[i];
+				removeIndex = i;
+				newIndex = newIndices[i];
 			}
-			initial.set(i, oldPath);
 		}
 		if (max > sum) {
 			initial.set(removeIndex, candidates.get(newIndex));
@@ -309,23 +332,45 @@ public class PathSelection {
 	 * @return true if initial solution is improved, false otherwise
 	 */
 	private boolean canImprove(List<Path<Point>> initial, List<Path<Point>> candidates) {
-		double original = fr.arrivability(initial);
+		double[] sums = new double[initial.size()];
+		int[] newIndices = new int[initial.size()];
+		if (MineField.PARALLEL) {
+			IntStream.range(0, initial.size()).parallel().forEach(i -> {
+				List<Path<Point>> solution = Path.clonePaths(initial);
+				for (int j = 0; j < candidates.size(); ++j) {
+					solution.set(i, candidates.get(j));
+					double newSum = fr.arrivability(solution);
+					if (newSum > sums[i]) {
+						sums[i] = newSum;
+						newIndices[i] = j;
+					}
+				}
+			});
+		} else {
+			for (int i = 0; i < initial.size(); ++i) {
+				Path<Point> oldPath = initial.get(i);
+				for (int j = 0; j < candidates.size(); ++j) {
+					initial.set(i, candidates.get(j));
+					double newSum = fr.arrivability(initial);
+					if (newSum > sums[i]) {
+						sums[i] = newSum;
+						newIndices[i] = j;
+					}
+				}
+				initial.set(i, oldPath);
+			}
+		}
+		double sum = fr.arrivability(initial);
 		double max = Double.NEGATIVE_INFINITY;
 		int removeIndex = -1, newIndex = -1;
 		for (int i = 0; i < initial.size(); ++i) {
-			Path<Point> oldPath = initial.get(i);
-			for (int j = 0; j < candidates.size(); ++j) {
-				initial.set(i, candidates.get(j));
-				double newSum = fr.arrivability(initial);
-				if (newSum > max) {
-					max = newSum;
-					removeIndex = i;
-					newIndex = j;
-				}
+			if (sums[i] > max) {
+				max = sums[i];
+				removeIndex = i;
+				newIndex = newIndices[i];
 			}
-			initial.set(i, oldPath);
 		}
-		if (max > original) {
+		if (max > sum) {
 			initial.set(removeIndex, candidates.get(newIndex));
 			return true;
 		}

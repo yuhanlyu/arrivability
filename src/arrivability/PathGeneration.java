@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * 
@@ -97,8 +98,14 @@ public class PathGeneration {
 	 */
 	public List<Path<Point>> randomPaths(int numberOfPaths, Point source, Point target) {
 		Path<Point>[] paths = new Path[numberOfPaths];
-		for (int i = 0; i < numberOfPaths; ++i)
-			paths[i] = randomPath(source, target);
+		if (MineField.PARALLEL)
+			IntStream.range(0, numberOfPaths).parallel().forEach(i -> {
+				paths[i] = randomPath(source, target);
+			});
+		else {
+			for (int i = 0; i < numberOfPaths; ++i)
+				paths[i] = randomPath(source, target);
+		}
 		return Arrays.asList(paths);
 	}
 	
