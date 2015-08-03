@@ -139,6 +139,7 @@ public class Path<V> implements Iterable<V> {
 		return Arrays.asList(duplicates);
 	}
 	
+	/*
 	@Override
 	public boolean equals(Object obj) {
 		Path<V> rhs = (Path<V>)obj;
@@ -158,7 +159,7 @@ public class Path<V> implements Iterable<V> {
 			result ^= point.hashCode();
 		}
 		return result;
-	}
+	}*/
 	
 	@Override
 	public Iterator<V> iterator() {

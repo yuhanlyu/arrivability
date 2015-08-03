@@ -265,13 +265,13 @@ public class Graph <V extends Comparable<V>> {
      * @return distance
      */
     public double distanceQuery(V source, V target) {
-    	if (!apspUnweightedDistance.containsKey(source)) {
+    	Map<V, Double> d = apspUnweightedDistance.computeIfAbsent(source, s -> {
     		Map<V, V> parent = new HashMap<>();
-        	Map<V, Double> distance = unweightedShortestPath(source, parent);
-        	apspUnweightedDistance.put(source, distance);
-        	apspUnweightedParent.put(source, parent);
-    	}
-    	return apspUnweightedDistance.get(source).get(target);
+        	Map<V, Double> distance = unweightedShortestPath(s, parent);
+        	apspUnweightedParent.put(s, parent);
+        	return distance;
+    	});
+    	return d.get(target);
     }
     
     /**

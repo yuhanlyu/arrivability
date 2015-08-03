@@ -440,6 +440,87 @@ public class FailureRate {
 		}
 		return result;
 	}
+	
+	/**
+	 * Convert from forbidden areas to super set of bitsets
+	 * @param forbiddenAreas a list of forbidden areas
+	 * @return a list of bitsets
+	 */
+	public List<BitSet> fromAreasToBitSuperSets(List<Collection<Point>> forbiddenAreas) { 
+		BitSet[] temp = new BitSet[forbiddenAreas.size()];
+		for (int i = 0; i < forbiddenAreas.size(); ++i)
+			temp[i] = fromAreaToBitSet(forbiddenAreas.get(i));
+		BitSet[] result = new BitSet[1 << forbiddenAreas.size()];
+		for (int i = 0; i < 1 << forbiddenAreas.size(); ++i) {
+			result[i] = new BitSet(fg.vertexSet().size());
+			for (int j = 0; j < forbiddenAreas.size(); ++j) {
+				if (((i >> j) & 1) == 1) {
+					result[i].or(temp[j]);
+				}
+			}
+		}
+		return Arrays.asList(result);
+	}
+	
+	/**
+     * Computing arrivability based on the super set of forbidden areas
+     * @param areaPowerSet
+     * @return arrivability
+     */
+    public double arrivabilityFromBitSuperSets(List<BitSet> areasPowerSet, double arrivability, BitSet newSet) {
+    	for (int i = 0; i < areasPowerSet.size(); ++i) {
+    		BitSet temp = (BitSet)areasPowerSet.get(i).clone();
+    		temp.or(newSet);
+    		arrivability += ((POPULATION_COUNT[i] + 1) % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(temp.cardinality());
+    	}
+    	return arrivability;
+    }
+    
+    /**
+     * Computing arrivability based on the super set of forbidden areas
+     * @param areasPowerSet the super of forbidden areas
+     * @return arrivability
+     */
+    public double arrivabilityFromBitSuperSets(List<BitSet> areasPowerSet) {
+    	double arrivability = 0.0;
+    	for (int i = 1; i < areasPowerSet.size(); ++i) {
+    		arrivability += ((POPULATION_COUNT[i]) % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(areasPowerSet.get(i).cardinality());
+    	}
+    	return arrivability;
+    }
+	
+	private static final int[] POPULATION_COUNT = {0, 1, 1, 2, 1, 2, 2, 3, 
+			   1, 2, 2, 3, 2, 3, 3, 4, 
+			   1, 2, 2, 3, 2, 3, 3, 4, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   1, 2, 2, 3, 2, 3, 3, 4, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   1, 2, 2, 3, 2, 3, 3, 4, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   4, 5, 5, 6, 5, 6, 6, 7, 
+			   1, 2, 2, 3, 2, 3, 3, 4, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   4, 5, 5, 6, 5, 6, 6, 7, 
+			   2, 3, 3, 4, 3, 4, 4, 5, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   4, 5, 5, 6, 5, 6, 6, 7, 
+			   3, 4, 4, 5, 4, 5, 5, 6, 
+			   4, 5, 5, 6, 5, 6, 6, 7, 
+			   4, 5, 5, 6, 5, 6, 6, 7, 
+			   5, 6, 6, 7, 6, 7, 7, 8}; 
     
     public static void main(String[] args) {
     	GridGraph g = new GridGraph(5, 5);

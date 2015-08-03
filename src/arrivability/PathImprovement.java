@@ -35,7 +35,7 @@ public class PathImprovement {
 	 */
 	public List<Path<Point>> improve(List<Path<Point>> solution) {
 		logger.info("Start to improve");
-		List<Path<Point>> globalMax = Path.clonePaths(solution);
+		List<Path<Point>> globalMax = new ArrayList<>(solution);
 		
 		double maxArrivability = fr.arrivability(solution);
 		for (int i = 0; i < NUMBER_OF_ITERATIONS; ++i) {
@@ -47,7 +47,7 @@ public class PathImprovement {
 				if (arrivability > maxArrivability) {
 					logger.info("Improved");
 					maxArrivability = arrivability;
-					globalMax = Path.clonePaths(solution);
+					globalMax = new ArrayList<>(solution);
 				}
 			} 
 		}
@@ -128,16 +128,23 @@ public class PathImprovement {
 	private boolean canImprove(List<Path<Point>> initial) {
 		logger.fine("Try to improve");
 		Result result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
-			List<BitSet> bitsets = fr.fromAreasToBitSets(fr.forbiddenAreas(initial));
+			List<Path<Point>> initialCopy = new ArrayList<>();
+			for (int index = 0; index < initial.size(); ++index)
+				if (index != i) {
+					initialCopy.add(initial.get(index));
+				}
+			List<BitSet> bitSuperSet = fr.fromAreasToBitSuperSets(fr.forbiddenAreas(initialCopy));
+			double currentArrivability = fr.arrivabilityFromBitSuperSets(bitSuperSet);
+			
 			double obj = 0.0;
 			Path<Point> path = initial.get(i), newPath = null;
+			
 			for (int j = 0; j < path.size(); ++j) {
 				for (int k = j + 2; k < path.size(); ++k) {
 					ShortCutResult r = shortcut(path, j, k);
 					if (r == null)
 						continue;
-					bitsets.set(i, r.area);
-					double arrivability = fr.arrivabilityFromBitSets(bitsets);
+					double arrivability = fr.arrivabilityFromBitSuperSets(bitSuperSet, currentArrivability, r.area);
 					if (arrivability > obj) {
 						obj = arrivability;
 						newPath = r.path;
