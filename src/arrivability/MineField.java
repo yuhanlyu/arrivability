@@ -40,7 +40,6 @@ public class MineField extends Application {
 	// For arrivability model
 	private static final int NUMBER_OF_BLOCKERS = 5;
 	private static final int MINE_RADIUS = 1;
-	private static final int MAX_UNION = 37;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	//private Arrivability model = new FixedRadiusHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
 	//private Arrivability model = new FixedRadiusPoissonHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);

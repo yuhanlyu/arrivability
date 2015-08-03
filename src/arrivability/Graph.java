@@ -260,7 +260,7 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Distance query between two points
-     * @param source sourece point
+     * @param source source point
      * @param target target point
      * @return distance
      */
