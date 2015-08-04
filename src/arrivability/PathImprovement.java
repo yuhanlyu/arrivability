@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 public class PathImprovement {
 	
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
-	private static final int NUMBER_OF_ITERATIONS = 100;
+	private static final int NUMBER_OF_ITERATIONS = 10;
 	private Graph<Point> g;
 	private FailureRate fr;
 	private Map<ShortCutKey, ShortCutResult> cache = new ConcurrentHashMap<>();
@@ -49,7 +49,8 @@ public class PathImprovement {
 					maxArrivability = arrivability;
 					globalMax = new ArrayList<>(solution);
 				}
-			} 
+			}
+			System.out.println(i);
 		}
 		logger.info("Local improvement completed with arrivability " + maxArrivability);
 		return globalMax;
