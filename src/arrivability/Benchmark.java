@@ -10,8 +10,11 @@ public class Benchmark extends ConsoleHandler {
 	private static final int ROW = 50;
 	private static final int COLUMN = 50;
 	private static final int NUMBER_OF_BLOCKERS = 1;
-	private static final int NUMBER_OF_ROBOTS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
+	private static final int NUMBER_OF_ROBOTS = 6;
+	private static final int NUMBER_OF_REQUEST = 2;
+	private static final int NUMBER_OF_GENERATE = 100;
+	private static final int NUMBER_OF_ITERATIONS = 10;
 	
 	private int generationTime;
 	private int initialSolutionTime;
@@ -60,7 +63,7 @@ public class Benchmark extends ConsoleHandler {
 	    GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN);
 		Graph<Point> g = GraphLoader.getGraph();
 		FailureRate model = new FailureRate(fg, g, FAILURE_PROBABILITY);
-		MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS);
+		MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, NUMBER_OF_ITERATIONS);
 		Point source = new Point(ROW / 2, 0);
 		Point target = new Point(ROW / 2, COLUMN - 1);
 		

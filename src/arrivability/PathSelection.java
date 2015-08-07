@@ -34,12 +34,12 @@ public class PathSelection {
 	 * @param numberOfRobots number of robots
 	 * @return a list of paths
 	 */
-	public List<Path<Point>> select(List<Path<Point>> candidates, int numberOfRobots) {
+	public List<Path<Point>> select(List<Path<Point>> candidates, int numberOfRobots, int numberOfRequest) {
 		long startTime = System.nanoTime();
 		List<Path<Point>> sols = initialSolution(candidates, numberOfRobots);
 		long initialTime = System.nanoTime();
 		logger.info("Initial solution takes " + (initialTime - startTime) / 1000000 + " milliseconds");
-		List<Path<Point>> result = localImprovement(sols, candidates);
+		List<Path<Point>> result = localImprovement(sols, candidates, numberOfRequest);
 		long improveTime = System.nanoTime();
 		logger.info("Local improvementn takes " + (improveTime - initialTime) / 1000000 + " milliseconds");
 		return result;
@@ -112,8 +112,8 @@ public class PathSelection {
 	 * @param candidates candidate paths
 	 * @return an improved solution
 	 */
-	private List<Path<Point>> localImprovement(List<Path<Point>> initial, List<Path<Point>> candidates) {
-		while (canImprove(initial, candidates)) {
+	private List<Path<Point>> localImprovement(List<Path<Point>> initial, List<Path<Point>> candidates, int numberOfRequest) {
+		while (canImprove(initial, candidates, numberOfRequest)) {
 			;
 		}
 		return initial;
@@ -125,14 +125,14 @@ public class PathSelection {
 	 * @param candidates candidate paths
 	 * @return true if initial solution is improved, false otherwise
 	 */
-	private boolean canImprove(List<Path<Point>> initial, List<Path<Point>> candidates) {
+	private boolean canImprove(List<Path<Point>> initial, List<Path<Point>> candidates, int numberOfRequest) {
 		Result result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
 			List<Path<Point>> solution = Path.clonePaths(initial);
 			double obj = 0.0;
 			int index = 0;
 			for (int j = 0; j < candidates.size(); ++j) {
 				solution.set(i, candidates.get(j));
-				double newSum = fr.arrivability(solution);
+				double newSum = fr.arrivability(solution, numberOfRequest);
 				if (newSum > obj) {
 					obj = newSum;
 					index = j;
@@ -141,7 +141,7 @@ public class PathSelection {
 			return new Result(obj, i, index);
 		}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
 		
-		if (result.sum > fr.arrivability(initial)) {
+		if (result.sum > fr.arrivability(initial, numberOfRequest)) {
 			initial.set(result.removeIndex, candidates.get(result.newIndex));
 			return true;
 		}
@@ -235,7 +235,7 @@ public class PathSelection {
 		double[][] fre = new double[m1 + 1][m2 + 1];
 		for (int i = 1; i <= m2; i++) 
 			fre[0][i] = Double.POSITIVE_INFINITY;
-    	for (int i=1; i <= m1; i++) 
+    	for (int i = 1; i <= m1; i++) 
     		fre[i][0] = Double.POSITIVE_INFINITY;
     	
     	int i = 1;

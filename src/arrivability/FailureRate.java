@@ -115,7 +115,7 @@ public class FailureRate {
 	 * @return failure rate
 	 */
 	public double failureRateFromForbidden(List<Collection<Point>> forbiddenArea) {
-		return 1 - arrivabilityFromForbidden(forbiddenArea);
+		return 1 - arrivabilityFromForbidden(forbiddenArea, 1);
 	}
 	
 	/**
@@ -124,7 +124,7 @@ public class FailureRate {
 	 * @return failure rate
 	 */
 	public double failureRate(List<Path<Point>> paths) {
-		return 1 - arrivability(paths);
+		return 1 - arrivability(paths, 1);
 	}
 	
 	/**
@@ -175,10 +175,11 @@ public class FailureRate {
     /**
 	 * Compute the arrivability of a set of paths
 	 * @param paths a set of paths
+	 * @param resuest number of requested robots
 	 * @return the arrivability
 	 */
-	public double arrivability(List<Path<Point>> paths) {
-		return arrivabilityFromForbidden(forbiddenAreas(paths));
+	public double arrivability(List<Path<Point>> paths, int request) {
+		return arrivabilityFromForbidden(forbiddenAreas(paths), request);
 	}
 	
 	/**
@@ -194,9 +195,36 @@ public class FailureRate {
     /**
      * Compute arrivability from a list of forbidden areas
      * @param forbiddenAreas forbidden areas
+     * @param request the number of request robots
      * @return arrivability
      */
-    public double arrivabilityFromForbidden(List<Collection<Point>> forbiddenAreas) {
+	public double arrivabilityFromForbidden(List<Collection<Point>> forbiddenAreas, int request) {
+		if (request == 1)
+			return arrivabilityFromForbidden(forbiddenAreas);
+    	int n = forbiddenAreas.size(), k = request;
+    	List<Collection<Point>> areas = new ArrayList<>();
+    	// Gosper's hack
+    	for (int comb = (1 << k) - 1; comb < 1 << n;) {
+    		Collection<Point> forbiddenArea = new HashSet<>();
+    		for (int i = 0; i < n; ++i) {
+    			if (((comb >> i) & 1) == 1)
+    				forbiddenArea.addAll(forbiddenAreas.get(i));
+    		}
+    		areas.add(forbiddenArea);
+    		int x = comb & -comb, y = comb + x;
+    	    comb = ((comb ^ y) / x >> 2) | y;
+    	}
+    	double result = arrivabilityFromForbidden(areas);
+    	return result;
+    }
+	
+	/**
+     * Compute arrivability from a list of forbidden areas
+     * @param forbiddenAreas forbidden areas
+     * @param request the number of request robots
+     * @return arrivability
+     */
+    private double arrivabilityFromForbidden(List<Collection<Point>> forbiddenAreas) {
     	int[] isSelected = new int[forbiddenAreas.size()];
 		isSelected[0] = 1;
 		Collection<Point> forbiddenArea = new HashSet<>();
@@ -226,9 +254,35 @@ public class FailureRate {
     /**
      * Compute arrivability from a list of forbidden areas
      * @param forbiddenAreas bitset representation of areas
+     * @param request the number of request robots
      * @return arrivability
      */
-    public double arrivabilityFromBitSets(List<BitSet> forbiddenAreas) {
+    public double arrivabilityFromBitSets(List<BitSet> forbiddenAreas, int request) {
+    	if (request == 1)
+			return arrivabilityFromBitSets(forbiddenAreas);
+    	int n = forbiddenAreas.size(), k = request;
+    	List<BitSet> areas = new ArrayList<>();
+    	// Gosper's hack
+    	for (int comb = (1 << k) - 1; comb < 1 << n;) {
+    		BitSet forbiddenArea = new BitSet(vertexSet().size());
+    		for (int i = 0; i < n; ++i) {
+    			if (((comb >> i) & 1) == 1)
+    				forbiddenArea.or(forbiddenAreas.get(i));
+    		}
+    		areas.add(forbiddenArea);
+    		int x = comb & -comb, y = comb + x;
+    	    comb = ((comb ^ y) / x >> 2) | y;
+    	}
+    	double result = arrivabilityFromBitSets(areas);
+    	return result;
+    }
+    
+    /**
+     * Compute arrivability from a list of forbidden areas
+     * @param forbiddenAreas bitset representation of areas
+     * @return arrivability
+     */
+    private double arrivabilityFromBitSets(List<BitSet> forbiddenAreas) {
     	int[] isSelected = new int[forbiddenAreas.size()];
 		isSelected[0] = 1;
 		BitSet forbiddenArea = new BitSet(g.vertexSet().size());
@@ -245,6 +299,7 @@ public class FailureRate {
 			    ++i;
 			}
 			arrivability += (count % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(forbiddenArea.cardinality());
+						
 			// Find the next subset
 			for (i = 0; i < forbiddenAreas.size() && isSelected[i] == 1; ++i)
 				isSelected[i] = 0;
@@ -464,14 +519,18 @@ public class FailureRate {
 	
 	/**
      * Computing arrivability based on the super set of forbidden areas
-     * @param areaPowerSet
+     * @param areaPowerSet the power set of forbidden areas
+     * @param arrivability arrivability of the paths
+     * @newSet the forbidden area of the new added path
+     * @param request the number of request robots
      * @return arrivability
      */
-    public double arrivabilityFromBitSuperSets(List<BitSet> areasPowerSet, double arrivability, BitSet newSet) {
+    public double arrivabilityFromBitSuperSets(List<BitSet> areasPowerSet, double arrivability, BitSet newSet, int request) {
     	for (int i = 0; i < areasPowerSet.size(); ++i) {
     		BitSet temp = (BitSet)areasPowerSet.get(i).clone();
     		temp.or(newSet);
-    		arrivability += ((POPULATION_COUNT[i] + 1) % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(temp.cardinality());
+    		if (POPULATION_COUNT[i] + 1 >= request)
+    			arrivability += ((POPULATION_COUNT[i]) % 2 == 0 ? 1 : -1) * arrivabilityFromForbidden(temp.cardinality());
     	}
     	return arrivability;
     }
@@ -479,12 +538,14 @@ public class FailureRate {
     /**
      * Computing arrivability based on the super set of forbidden areas
      * @param areasPowerSet the super of forbidden areas
+     * @param request the number of request robots
      * @return arrivability
      */
-    public double arrivabilityFromBitSuperSets(List<BitSet> areasPowerSet) {
+    public double arrivabilityFromBitSuperSets(List<BitSet> areasPowerSet, int request) {
     	double arrivability = 0.0;
     	for (int i = 1; i < areasPowerSet.size(); ++i) {
-    		arrivability += ((POPULATION_COUNT[i]) % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(areasPowerSet.get(i).cardinality());
+    		if (POPULATION_COUNT[i] >= request)
+    			arrivability += ((POPULATION_COUNT[i]) % 2 == 1 ? 1 : -1) * arrivabilityFromForbidden(areasPowerSet.get(i).cardinality());
     	}
     	return arrivability;
     }
@@ -535,6 +596,6 @@ public class FailureRate {
         System.out.println(fr.arrivability(path));
         
         List<Path<Point>> paths = Arrays.asList(path, path);
-        System.out.println(fr.arrivability(paths));
+        System.out.println(fr.arrivability(paths, 1));
     }
 }

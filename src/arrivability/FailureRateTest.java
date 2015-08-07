@@ -19,7 +19,7 @@ public class FailureRateTest {
         path.addVertex(new Point(2, 3));
         path.addVertex(new Point(2, 4));
         assertEquals(15, fr.forbiddenArea(path).size());
-        assertTrue(Math.abs(fr.arrivability(path) - fr.arrivability(Arrays.asList(path, path))) < 1e-7);
+        assertTrue(Math.abs(fr.arrivability(path) - fr.arrivability(Arrays.asList(path, path), 1)) < 1e-7);
         
         Path<Point> path2 = new Path<>();
         path2.addVertex(new Point(2, 0));
@@ -35,6 +35,6 @@ public class FailureRateTest {
         double arrivability = Math.pow(successProbaiblity, fr.forbiddenArea(path).size());
         arrivability += Math.pow(successProbaiblity, fr.forbiddenArea(path2).size());
         arrivability -= Math.pow(successProbaiblity, fr.forbiddenArea(Arrays.asList(path, path2)).size());
-        assertTrue(Math.abs(fr.arrivability(Arrays.asList(path, path2)) - arrivability) < 1e-7);
+        assertTrue(Math.abs(fr.arrivability(Arrays.asList(path, path2), 1) - arrivability) < 1e-7);
 	}
 }

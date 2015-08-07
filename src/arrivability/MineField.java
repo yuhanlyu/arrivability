@@ -31,8 +31,8 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	public static final int ROW = 100;
-	public static final int COLUMN = 100;
+	public static final int ROW = 30;
+	public static final int COLUMN = 30;
 	private static final int RADIUS = 3;
 	private static final int SHIFT = 20;
 	private static final int SEPARATION = 3;
@@ -41,6 +41,13 @@ public class MineField extends Application {
 	private static final int NUMBER_OF_BLOCKERS = 5;
 	private static final int MINE_RADIUS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
+	
+	private static final int NUMBER_OF_ROBOTS = 10;
+	private static final int NUMBER_OF_REQUEST = 1;
+	private static final int NUMBER_OF_GENERATE = 100;
+	private static final int NUMBER_OF_ITERATIONS = 100;
+	
+	
 	//private Arrivability model = new FixedRadiusHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
 	//private Arrivability model = new FixedRadiusPoissonHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
 	
@@ -52,11 +59,10 @@ public class MineField extends Application {
 	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
 	private Point source = new Point(ROW / 2, 0);
 	private Point target = new Point(ROW / 2, COLUMN - 1);
-	private int numberOfPaths = 10;
+	
 	
 	// For maximizing arrivability
-	private static final int NUMBER_OF_ROBOTS = 6;
-	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS);
+	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, NUMBER_OF_ITERATIONS);
 	
 	// For auxiliary information
 	private Text info = new Text(10, 10, "#Rows is " + ROW + " #Columns is " + COLUMN);
@@ -151,14 +157,6 @@ public class MineField extends Application {
             public void handle(final KeyEvent keyEvent) {
         		// Drawing path
             	switch (keyEvent.getCharacter().charAt(0)) {
-            	    case '+':
-            		    ++numberOfPaths;
-                    	computePaths();
-            		    break;
-            	    case '-':
-            		    --numberOfPaths;
-                    	computePaths();
-            		    break;
             	    case 'r':
             	    	randomPath();
             	    	break;

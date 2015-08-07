@@ -2,6 +2,7 @@ package arrivability;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -13,7 +14,6 @@ import java.util.stream.IntStream;
 public class PathImprovement {
 	
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
-	private static final int NUMBER_OF_ITERATIONS = 10;
 	private Graph<Point> g;
 	private FailureRate fr;
 	private Map<ShortCutKey, ShortCutResult> cache = new ConcurrentHashMap<>();
@@ -33,24 +33,23 @@ public class PathImprovement {
 	 * @param solution a solution
 	 * @return a probably better solution
 	 */
-	public List<Path<Point>> improve(List<Path<Point>> solution) {
+	public List<Path<Point>> improve(List<Path<Point>> solution, int request, int numberOfIterations) {
 		logger.info("Start to improve");
 		List<Path<Point>> globalMax = new ArrayList<>(solution);
 		
-		double maxArrivability = fr.arrivability(solution);
-		for (int i = 0; i < NUMBER_OF_ITERATIONS; ++i) {
-			if (!canImprove(solution)) {
+		double maxArrivability = fr.arrivability(solution, request);
+		for (int i = 0; i < numberOfIterations; ++i) {
+			if (!canImprove(solution, request)) {
 				logger.fine("Cannot improve, escape instead");
 				escape(solution);
 			} else {
-				double arrivability = fr.arrivability(solution);
+				double arrivability = fr.arrivability(solution, request);
 				if (arrivability > maxArrivability) {
 					logger.info("Improved");
 					maxArrivability = arrivability;
 					globalMax = new ArrayList<>(solution);
 				}
 			}
-			System.out.println(i);
 		}
 		logger.info("Local improvement completed with arrivability " + maxArrivability);
 		return globalMax;
@@ -126,36 +125,60 @@ public class PathImprovement {
 	 * @param solution current solution
 	 * @return true if solution is improved, false otherwise 
 	 */
-	private boolean canImprove(List<Path<Point>> initial) {
+	private boolean canImprove(List<Path<Point>> initial, int request) {
 		logger.fine("Try to improve");
-		Result result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
-			List<Path<Point>> initialCopy = new ArrayList<>();
-			for (int index = 0; index < initial.size(); ++index)
-				if (index != i) {
-					initialCopy.add(initial.get(index));
-				}
-			List<BitSet> bitSuperSet = fr.fromAreasToBitSuperSets(fr.forbiddenAreas(initialCopy));
-			double currentArrivability = fr.arrivabilityFromBitSuperSets(bitSuperSet);
-			
-			double obj = 0.0;
-			Path<Point> path = initial.get(i), newPath = null;
-			
-			for (int j = 0; j < path.size(); ++j) {
-				for (int k = j + 2; k < path.size(); ++k) {
-					ShortCutResult r = shortcut(path, j, k);
-					if (r == null)
-						continue;
-					double arrivability = fr.arrivabilityFromBitSuperSets(bitSuperSet, currentArrivability, r.area);
-					if (arrivability > obj) {
-						obj = arrivability;
-						newPath = r.path;
+		Result result = null;
+		if (request == 1) {
+			result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
+				List<Path<Point>> initialCopy = new ArrayList<>();
+				for (int index = 0; index < initial.size(); ++index)
+					if (index != i) {
+						initialCopy.add(initial.get(index));
+					}
+				List<BitSet> bitSuperSet = fr.fromAreasToBitSuperSets(fr.forbiddenAreas(initialCopy));
+				double currentArrivability = fr.arrivabilityFromBitSuperSets(bitSuperSet, request);
+
+				double obj = 0.0;
+				Path<Point> path = initial.get(i), newPath = null;
+
+				for (int j = 0; j < path.size(); ++j) {
+					for (int k = j + 2; k < path.size(); ++k) {
+						ShortCutResult r = shortcut(path, j, k);
+						if (r == null)
+							continue;
+						double arrivability = fr.arrivabilityFromBitSuperSets(bitSuperSet, currentArrivability, r.area, request);
+						if (arrivability > obj) {
+							obj = arrivability;
+							newPath = r.path;
+						}
 					}
 				}
-			}
-			return new Result(obj, i, newPath);
-		}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
+				return new Result(obj, i, newPath);
+			}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
+		} else {
+			result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
+				List<BitSet> areas = fr.fromAreasToBitSets(fr.forbiddenAreas(initial));
+				double obj = 0.0;
+				Path<Point> path = initial.get(i), newPath = null;
+
+				for (int j = 0; j < path.size(); ++j) {
+					for (int k = j + 2; k < path.size(); ++k) {
+						ShortCutResult r = shortcut(path, j, k);
+						if (r == null)
+							continue;
+						areas.set(i, r.area);
+						double arrivability = fr.arrivabilityFromBitSets(areas, request);
+						if (arrivability > obj) {
+							obj = arrivability;
+							newPath = r.path;
+						}
+					}
+				}
+				return new Result(obj, i, newPath);
+			}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
+		}
 		
-		if (result.sum > fr.arrivability(initial)) {
+		if (result.sum > fr.arrivability(initial, request)) {
 			initial.set(result.removeIndex, result.newPath);
 			return true;
 		}
