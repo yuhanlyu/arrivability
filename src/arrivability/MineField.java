@@ -31,8 +31,8 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	public static final int ROW = 100;
-	public static final int COLUMN = 100;
+	public static final int ROW = 70;
+	public static final int COLUMN = 70;
 	private static final int RADIUS = 3;
 	private static final int SHIFT = 20;
 	private static final int SEPARATION = 3;

@@ -50,7 +50,7 @@ public class MaximizeArrivability {
 		List<Path<Point>> solution = ps.select(paths, numberOfRobots, numberOfRequest);
 		long selectionTime = System.nanoTime();
 		logger.info("Path selection takes " + (selectionTime - generationTime) / 1000000 + " milliseconds");
-		List<Path<Point>> improved = pi.improve(solution, numberOfRequest, numberOfIteration);
+		List<Path<Point>> improved = pi.improve(solution, pg, numberOfRequest, numberOfIteration);
 		long endTime = System.nanoTime();
 		logger.info("Path improvement takes " + (endTime - selectionTime) / 1000000 + " milliseconds");
     	long duration = (endTime - startTime) / 1000000;

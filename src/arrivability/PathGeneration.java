@@ -115,7 +115,7 @@ public class PathGeneration {
 	 * @param target target point
 	 * @return a random path
 	 */
-	private Path<Point> randomPath(Point source, Point target) {		
+	public Path<Point> randomPath(Point source, Point target) {		
 		Set<Point> inqueue = new HashSet<>();
 		Set<Point> inpath = new HashSet<>();
 		Map<Point, Point> parent = new HashMap<>();

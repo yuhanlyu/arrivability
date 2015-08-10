@@ -39,7 +39,7 @@ public class PathImprovement {
 	 * @param solution a solution
 	 * @return a probably better solution
 	 */
-	public List<Path<Point>> improve(List<Path<Point>> solution, int request, int numberOfIterations) {
+	public List<Path<Point>> improve(List<Path<Point>> solution, PathGeneration pg, int request, int numberOfIterations) {
 		logger.info("Start to improve");
 		List<Path<Point>> globalMax = new ArrayList<>(solution);
 		g.reset();
@@ -48,7 +48,7 @@ public class PathImprovement {
 		for (int i = 0; i < numberOfIterations; ++i) {
 			if (!canImprove(solution, request)) {
 				logger.fine("Cannot improve, escape instead");
-				escape(solution);
+				escape(solution, pg);
 			} else {
 				double arrivability = fr.arrivability(solution, request);
 				if (arrivability > maxArrivability) {
@@ -66,11 +66,11 @@ public class PathImprovement {
 	 * Escape from a local maximum
 	 * @param solution a solution
 	 */
-	private void escape(List<Path<Point>> solution) {
+	private void escape(List<Path<Point>> solution, PathGeneration pg) {
 		Random random = new Random();
 		int randomIndex = random.nextInt(solution.size());
 		Path<Point> path = solution.get(randomIndex);
-		solution.set(randomIndex, escape(path));
+		solution.set(randomIndex, escape(path, pg));
 	}
 	
 	/**
@@ -78,10 +78,13 @@ public class PathImprovement {
 	 * @param path a path
 	 * @return a new path
 	 */
-	private Path<Point> escape(Path<Point> path) {
+	private Path<Point> escape(Path<Point> path, PathGeneration pg) {
 		logger.fine("Escape from " + path.toString());
 		Path<Point> result = null;
 		Random random = new Random();
+		if (random.nextInt(5) < 4) {
+			return pg.randomPath(path.get(0), path.get(path.size() - 1));
+		}
 		int randomBegin = random.nextInt(path.size() - 2);
 		int randomEnd = random.nextInt(path.size() - randomBegin - 1) + randomBegin + 1;
 		assert(0 <= randomEnd && randomEnd < path.size());
