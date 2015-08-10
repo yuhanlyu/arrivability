@@ -1,6 +1,7 @@
 package arrivability;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -152,5 +153,70 @@ public abstract class FailureRate {
 		for (int i = 0; i < forbiddenAreas.size(); ++i)
 			duplicates[i] = new HashSet<>(forbiddenAreas.get(i));
 		return Arrays.asList(duplicates);
+	}
+	
+	/**
+	 * Convert from forbidden areas to bitsets
+	 * @param forbiddenAreas a list of forbidden areas
+	 * @return a list of bitsets
+	 */
+	public List<BitSet> fromAreasToBitSets(List<Collection<Point>> forbiddenAreas) { 
+		BitSet[] result = new BitSet[forbiddenAreas.size()];
+		for (int i = 0; i < forbiddenAreas.size(); ++i)
+			result[i] = fromAreaToBitSet(forbiddenAreas.get(i));
+		return Arrays.asList(result);
+	}
+	
+	/**
+	 * Convert from forbiden area
+	 * @param forbiddenArea forbidden area
+	 * @return a bitset corresponding to forbidden area
+	 */
+	public BitSet fromAreaToBitSet(Collection<Point> forbiddenArea) {
+		BitSet result = new BitSet(fg.vertexSet().size());
+		int i = 0;
+		for (Point point : fg.vertexSet()) {
+			if (forbiddenArea.contains(point))
+				result.set(i);
+			++i;
+		}
+		return result;
+	}
+	
+	/**
+	 * Convert a path to a bitset representing path's forbidden area
+	 * @param path a path
+	 * @return a bitset
+	 */
+	public BitSet fromPathToBitSet(Path<Point> path) {
+		BitSet result = new BitSet(fg.vertexSet().size());
+		for (Point point : path) {
+			for (Point neighbor : fg.getForbiddenArea(point)) {
+				int index = indexMap.get(neighbor);
+				result.set(index);
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Convert from forbidden areas to super set of bitsets
+	 * @param forbiddenAreas a list of forbidden areas
+	 * @return a list of bitsets
+	 */
+	public List<BitSet> fromAreasToBitSuperSets(List<Collection<Point>> forbiddenAreas) { 
+		BitSet[] temp = new BitSet[forbiddenAreas.size()];
+		for (int i = 0; i < forbiddenAreas.size(); ++i)
+			temp[i] = fromAreaToBitSet(forbiddenAreas.get(i));
+		BitSet[] result = new BitSet[1 << forbiddenAreas.size()];
+		for (int i = 0; i < 1 << forbiddenAreas.size(); ++i) {
+			result[i] = new BitSet(fg.vertexSet().size());
+			for (int j = 0; j < forbiddenAreas.size(); ++j) {
+				if (((i >> j) & 1) == 1) {
+					result[i].or(temp[j]);
+				}
+			}
+		}
+		return Arrays.asList(result);
 	}
 }

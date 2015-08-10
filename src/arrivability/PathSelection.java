@@ -22,7 +22,7 @@ public class PathSelection {
 	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
 	private static final int CACHE_SIZE = 100000;
 	private Graph<Point> g;
-	private FixedRadius fr;
+	private FailureRate fr;
 	private Map<Path<Point>, Map<Path<Point>, Double>> distanceMap = Collections.synchronizedMap(new LinkedHashMap<Path<Point>, Map<Path<Point>, Double>>() {
 		@Override
 		protected boolean removeEldestEntry(Map.Entry oldest) {
@@ -35,7 +35,7 @@ public class PathSelection {
 	 * @param arg_g graph
 	 * @param arg_fr failure rate computation
 	 */
-	public PathSelection(Graph<Point> arg_g, FixedRadius arg_fr) {
+	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr) {
 		g = arg_g;
 		fr = arg_fr;
 	}

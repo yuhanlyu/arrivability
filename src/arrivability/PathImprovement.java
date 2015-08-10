@@ -21,7 +21,7 @@ public class PathImprovement {
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
 	private static final int CACHE_SIZE = 100000;
 	private Graph<Point> g;
-	private FixedRadius fr;
+	private FailureRate fr;
 	private Map<ShortCutKey, ShortCutResult> cache = Collections.synchronizedMap(new LinkedHashMap<ShortCutKey, ShortCutResult>() {
 		@Override
 		protected boolean removeEldestEntry(Map.Entry oldest) {
@@ -34,7 +34,7 @@ public class PathImprovement {
 	 * @param arg_g graph
 	 * @param arg_fr failure rate computation
 	 */
-	public PathImprovement(Graph<Point> arg_g, FixedRadius arg_fr) {
+	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr) {
 		g = arg_g;
 		fr = arg_fr;
 	}
@@ -143,7 +143,30 @@ public class PathImprovement {
 	private boolean canImprove(List<Path<Point>> initial, int request) {
 		logger.fine("Try to improve");
 		Result result = null;
-		if (request == 1) {
+		if (fr instanceof RandomRadius) {
+			result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
+				List<Path<Point>> copy = new ArrayList(initial);
+				double obj = 0.0;
+				Path<Point> path = initial.get(i), newPath = null;
+
+				for (int j = 0; j < path.size(); ++j) {
+					for (int k = j + 2; k < path.size(); ++k) {
+						ShortCutResult r = shortcut(path, j, k);
+						if (r == null)
+							continue;
+						copy.set(i, r.path);
+						double arrivability = fr.arrivability(copy, request);
+						if (arrivability > obj) {
+							obj = arrivability;
+							newPath = r.path;
+						}
+					}
+				}
+				return new Result(obj, i, newPath);
+			}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
+		}
+		else if (request == 1) {
+			FixedRadius fr = (FixedRadius) (this.fr);
 			result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
 				List<Path<Point>> initialCopy = new ArrayList<>();
 				for (int index = 0; index < initial.size(); ++index)
@@ -171,6 +194,7 @@ public class PathImprovement {
 				return new Result(obj, i, newPath);
 			}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
 		} else {
+			FixedRadius fr = (FixedRadius) (this.fr);
 			result = IntStream.range(0, initial.size()).parallel().mapToObj(i -> {
 				List<BitSet> areas = fr.fromAreasToBitSets(fr.forbiddenAreas(initial));
 				double obj = 0.0;

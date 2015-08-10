@@ -332,71 +332,6 @@ public class FixedRadius extends FailureRate {
 	}
 	
 	/**
-	 * Convert from forbidden areas to bitsets
-	 * @param forbiddenAreas a list of forbidden areas
-	 * @return a list of bitsets
-	 */
-	public List<BitSet> fromAreasToBitSets(List<Collection<Point>> forbiddenAreas) { 
-		BitSet[] result = new BitSet[forbiddenAreas.size()];
-		for (int i = 0; i < forbiddenAreas.size(); ++i)
-			result[i] = fromAreaToBitSet(forbiddenAreas.get(i));
-		return Arrays.asList(result);
-	}
-	
-	/**
-	 * Convert from forbiden area
-	 * @param forbiddenArea forbidden area
-	 * @return a bitset corresponding to forbidden area
-	 */
-	public BitSet fromAreaToBitSet(Collection<Point> forbiddenArea) {
-		BitSet result = new BitSet(fg.vertexSet().size());
-		int i = 0;
-		for (Point point : fg.vertexSet()) {
-			if (forbiddenArea.contains(point))
-				result.set(i);
-			++i;
-		}
-		return result;
-	}
-	
-	/**
-	 * Convert a path to a bitset representing path's forbidden area
-	 * @param path a path
-	 * @return a bitset
-	 */
-	public BitSet fromPathToBitSet(Path<Point> path) {
-		BitSet result = new BitSet(fg.vertexSet().size());
-		for (Point point : path) {
-			for (Point neighbor : fg.getForbiddenArea(point)) {
-				int index = indexMap.get(neighbor);
-				result.set(index);
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Convert from forbidden areas to super set of bitsets
-	 * @param forbiddenAreas a list of forbidden areas
-	 * @return a list of bitsets
-	 */
-	public List<BitSet> fromAreasToBitSuperSets(List<Collection<Point>> forbiddenAreas) { 
-		BitSet[] temp = new BitSet[forbiddenAreas.size()];
-		for (int i = 0; i < forbiddenAreas.size(); ++i)
-			temp[i] = fromAreaToBitSet(forbiddenAreas.get(i));
-		BitSet[] result = new BitSet[1 << forbiddenAreas.size()];
-		for (int i = 0; i < 1 << forbiddenAreas.size(); ++i) {
-			result[i] = new BitSet(fg.vertexSet().size());
-			for (int j = 0; j < forbiddenAreas.size(); ++j) {
-				if (((i >> j) & 1) == 1) {
-					result[i].or(temp[j]);
-				}
-			}
-		}
-		return Arrays.asList(result);
-	}
-	
-	/**
      * Computing arrivability based on the super set of forbidden areas
      * @param areaPowerSet the power set of forbidden areas
      * @param arrivability arrivability of the paths
@@ -464,7 +399,7 @@ public class FixedRadius extends FailureRate {
     
     public static void main(String[] args) {
     	GridGraph g = new GridGraph(5, 5, 1);
-        FixedRadius fr = new FixedRadius(new GridFailureGroup(5, 5), g, 0.01);
+        FixedRadius fr = new FixedRadius(new GridFailureGroup(5, 5, 1), g, 0.01);
         Path<Point> path = new Path<>();
         path.addVertex(new Point(3, 0));
         path.addVertex(new Point(3, 1));

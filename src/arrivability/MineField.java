@@ -31,18 +31,18 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	public static final int ROW = 50;
-	public static final int COLUMN = 50;
+	public static final int ROW = 30;
+	public static final int COLUMN = 30;
 	private static final int RADIUS = 3;
 	private static final int SHIFT = 20;
 	private static final int SEPARATION = 3;
 
 	// For arrivability model
-	public static final int MINE_RADIUS = 2;
-	private static final int NUMBER_OF_BLOCKERS = 5;
+	public static final int MINE_RADIUS = 1;
+	private static final int NUMBER_OF_BLOCKERS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	
-	private static final int NUMBER_OF_ROBOTS = 6;
+	private static final int NUMBER_OF_ROBOTS = 2;
 	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
 	private static final int NUMBER_OF_ITERATIONS = 100;
@@ -52,9 +52,10 @@ public class MineField extends Application {
 	//private Arrivability model = new FixedRadiusPoissonHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
 	
 	// For minimizing failure rate
-	private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN);
+	private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
 	private Graph<Point> g = GraphLoader.getGraph();
-	private FixedRadius model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	private FailureRate model = new RandomRadius(fg, g, FAILURE_PROBABILITY, MINE_RADIUS + 1);
 	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
 	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
 	private Point source = new Point(ROW / 2, 0);
@@ -210,7 +211,7 @@ public class MineField extends Application {
 					System.out.println("Computing");
 					//MaximizeArrivability maximizer = new MaximizeArrivability(model, 2, 1, source, target);
 					//drawPaths(maximizer.getSolution(MAX_UNION));
-					FailureMinimizer minimizer = new FailureMinimizer(model, 2, 1, source, target);
+					FailureMinimizer minimizer = new FailureMinimizer((FixedRadius)model, 2, 1, source, target);
 					drawPaths(minimizer.getSolution());
 				} catch (Exception e) {
 					e.printStackTrace();

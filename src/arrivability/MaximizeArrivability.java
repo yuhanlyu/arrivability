@@ -25,7 +25,7 @@ public class MaximizeArrivability {
 	 * @param s path selector
 	 * @param i path enhance
 	 */
-	public MaximizeArrivability(Graph<Point> g, FixedRadius fr, int number, int required, int generate, int iteration) {
+	public MaximizeArrivability(Graph<Point> g, FailureRate fr, int number, int required, int generate, int iteration) {
 		numberOfRobots = number;
 		numberOfRequest = required;
 		numberOfGeneratedPaths = generate;

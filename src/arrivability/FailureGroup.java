@@ -1,9 +1,11 @@
 package arrivability;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Logger;
 
 public class FailureGroup <V extends Comparable<V>> {
@@ -65,6 +67,42 @@ public class FailureGroup <V extends Comparable<V>> {
     		throw new IllegalArgumentException("Try to find neighbors of a non-existing vertex");
     	}
     	return neighbors.get(vertex);
+    }
+    
+    /**
+     * Return the minimum distance (number of edges) from a vertex set to a target 
+     * @return the mapping of the distance
+     */
+    public Map<V, Integer> unweightedDistance(Iterable<V> vertexset) {
+    	for (V v : vertexset) {
+    		if (!vertexSet().contains(v))
+        		throw new IllegalArgumentException("Path does not exist");
+    	}
+    	
+    	Map<V, Integer> distanceMap = new HashMap<>();
+    	Queue<V> queue = new ArrayDeque<>();
+    	for (V v : vertexSet()) {
+    		distanceMap.put(v, Integer.MAX_VALUE);
+    	}
+    	for (V v : vertexset) {
+    		distanceMap.put(v, 0);
+    		queue.add(v);
+    	}
+    	
+    	while (!queue.isEmpty()) {
+    	    V node = queue.poll();
+    	    
+    	    int newDistance = distanceMap.get(node) + 1;
+            // Visit each edge exiting u
+            for (V neighbor : getForbiddenArea(node)) {
+                
+                if (distanceMap.get(neighbor) == Integer.MAX_VALUE) {
+    		        distanceMap.put(neighbor, newDistance);
+    		        queue.add(neighbor);
+    		    }
+            }
+        }
+    	return distanceMap;
     }
     
     @Override

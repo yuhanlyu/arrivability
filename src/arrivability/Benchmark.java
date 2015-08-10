@@ -11,6 +11,7 @@ public class Benchmark extends ConsoleHandler {
 	private static final int COLUMN = 50;
 	private static final int NUMBER_OF_BLOCKERS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
+	private static final int MINE_RADIUS = 1;
 	private static final int NUMBER_OF_ROBOTS = 6;
 	private static final int NUMBER_OF_REQUEST = 2;
 	private static final int NUMBER_OF_GENERATE = 100;
@@ -60,7 +61,7 @@ public class Benchmark extends ConsoleHandler {
 	    // if we wanted, but we will turn them all up.
 		Benchmark bm = new Benchmark();
 	    Logger.getLogger("").addHandler(bm);
-	    GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN);
+	    GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
 		Graph<Point> g = GraphLoader.getGraph();
 		FixedRadius model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
 		MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, NUMBER_OF_ITERATIONS);

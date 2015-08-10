@@ -102,8 +102,8 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Add an edge between source and target
-     * @param source
-     * @param target
+     * @param source a vertex
+     * @param target a vertex
      */
     public void addEdge(V source, V target) {
     	if (!contains(source) || !vertices.contains(target))
@@ -113,10 +113,10 @@ public class Graph <V extends Comparable<V>> {
     }
     
     /**
-     * 
-     * @param source
-     * @param target
-     * @param weight
+     * Add a new edge
+     * @param source source vertex
+     * @param target target vertex
+     * @param weight weight of the edge
      */
     public void addEdge(V source, V target, double weight) {
     	if (!contains(source) || !contains(target))
@@ -127,9 +127,9 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Test whether source and target are adjacent
-     * @param source
-     * @param target
-     * @return
+     * @param source a vertex
+     * @param target a vertex
+     * @return true if two vertices are adjacent, false otherwise
      */
     public boolean isAdjacent(V source, V target) {
     	if (!contains(source) || !contains(target))
@@ -139,9 +139,9 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Return the weight between source and target
-     * @param source
-     * @param target
-     * @return
+     * @param source a vertex
+     * @param target a vertex
+     * @return the weight between two vertices
      */
     public double getWeight(V source, V target) {
     	if (!contains(source) || !contains(target))
@@ -151,8 +151,8 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Return the neighbors of v
-     * @param v
-     * @return
+     * @param v a vertex
+     * @return the neighbors of v
      */
     public Collection<V> getNeighbors(V vertex) {
     	if (!contains(vertex))
@@ -162,8 +162,8 @@ public class Graph <V extends Comparable<V>> {
     
     /**
      * Return the minimum distance (number of edges) from a vertex set to a target 
-     * @param target
-     * @return
+     * @param target target point
+     * @return the distance from vertex set to the target
      */
     public double unweightedDistance(Iterable<V> vertexset, V target) {
     	for (V v : vertexset) {
