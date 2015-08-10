@@ -11,12 +11,17 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * 
+ * @author yuhanlyu
+ *
+ */
 public class PathImprovement {
 	
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
 	private static final int CACHE_SIZE = 100000;
 	private Graph<Point> g;
-	private FailureRate fr;
+	private FixedRadius fr;
 	private Map<ShortCutKey, ShortCutResult> cache = Collections.synchronizedMap(new LinkedHashMap<ShortCutKey, ShortCutResult>() {
 		@Override
 		protected boolean removeEldestEntry(Map.Entry oldest) {
@@ -29,7 +34,7 @@ public class PathImprovement {
 	 * @param arg_g graph
 	 * @param arg_fr failure rate computation
 	 */
-	public PathImprovement(Graph<Point> arg_g, FailureRate arg_fr) {
+	public PathImprovement(Graph<Point> arg_g, FixedRadius arg_fr) {
 		g = arg_g;
 		fr = arg_fr;
 	}

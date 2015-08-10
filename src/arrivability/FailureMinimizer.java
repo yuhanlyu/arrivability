@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -21,7 +20,7 @@ public class FailureMinimizer {
 	
 	private static final Logger logger = Logger.getLogger(FailureMinimizer.class.getName());
 
-	private FailureRate model;
+	private FixedRadius model;
 	private Point source;
 	private Point target;
 	private int numberOfRobots;
@@ -35,7 +34,7 @@ public class FailureMinimizer {
 	 * @param s source point
 	 * @param t target point
 	 */
-	public FailureMinimizer(FailureRate m, int n, int k, Point s, Point t) {
+	public FailureMinimizer(FixedRadius m, int n, int k, Point s, Point t) {
 		if (n != 2) {
 			logger.severe("Only can find two paths");
 			throw new UnsupportedOperationException("Only can find two paths");
@@ -104,7 +103,7 @@ public class FailureMinimizer {
 		List<List<Point>> newEnds = extendEnds(oldPaths, node.getEnds());
 		for (List<Point> ends : newEnds) {
 			List<Path<Point>> paths = Path.clonePaths(oldPaths);
-			List<Collection<Point>> forbiddenAreas = FailureRate.cloneAreas(oldAreas);
+			List<Collection<Point>> forbiddenAreas = FixedRadius.cloneAreas(oldAreas);
 			attachEnds(paths, ends, forbiddenAreas);
 			SearchNode newNode = createNode(node, paths, ends, forbiddenAreas);
 			result.add(newNode);

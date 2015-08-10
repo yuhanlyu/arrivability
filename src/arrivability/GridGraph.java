@@ -1,5 +1,8 @@
 package arrivability;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GridGraph extends Graph<Point> {
 	
 	private int numberOfRows;
@@ -10,7 +13,7 @@ public class GridGraph extends Graph<Point> {
 	 * @param n
 	 * @param m
 	 */
-	public GridGraph(int n, int m) {
+	public GridGraph(int n, int m, int radius) {
 		numberOfRows = n;
 		numberOfColumns = m;
 		
@@ -22,12 +25,12 @@ public class GridGraph extends Graph<Point> {
 		}
 		
 		// Initialize edges
-		int[][] direction = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+		List<int[]> direction = getDirections(radius);
 		for (int i = 0; i < numberOfRows; ++i) {
 			for (int j = 0; j < numberOfColumns; ++j) {
-				for (int k = 0; k < direction.length; ++k) {
-					int neighbor_row = i + direction[k][0];
-					int neighbor_column = j + direction[k][1];
+				for (int k = 0; k < direction.size(); ++k) {
+					int neighbor_row = i + direction.get(k)[0];
+					int neighbor_column = j + direction.get(k)[1];
 					if (neighbor_row >= numberOfRows || neighbor_row < 0)
 						continue;
 					if (neighbor_column >= numberOfColumns || neighbor_column < 0)
@@ -38,10 +41,34 @@ public class GridGraph extends Graph<Point> {
 		}
 	}
 	
+	/**
+	 * Compute the directions
+	 * @param radius radius of the bomb
+	 * @return all directions
+	 */
+	private static List<int[]> getDirections(int radius) {
+		List<int[]> result = new ArrayList<>();
+		for (int x = -radius; x <= radius; ++x) {
+			for (int y = -radius; y <= radius; ++y) {
+				if (0 < x * x + y * y && x * x + y * y <= radius)
+					result.add(new int[]{x, y});
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Get the number of rows
+	 * @return the number of rows
+	 */
 	public int getNumberOfRows() {
 		return numberOfRows;
 	}
 	
+	/**
+	 * Get the number of Columns
+	 * @return the number of columns
+	 */
 	public int getNumberOfColumns() {
 		return numberOfColumns;
 	}

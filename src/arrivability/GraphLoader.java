@@ -5,6 +5,7 @@ import java.util.Random;
 public class GraphLoader {
 	private static final int ROW = MineField.ROW;
 	private static final int COLUMN = MineField.COLUMN;
+	private static final int MINE_RADIUS = MineField.MINE_RADIUS;
 	
 	/**
 	 * Constructor
@@ -18,7 +19,7 @@ public class GraphLoader {
 	 * @return a graph
 	 */
 	public static Graph<Point> getGraph() {
-		GridGraph g = new GridGraph(ROW, COLUMN);
+		GridGraph g = new GridGraph(ROW, COLUMN, MINE_RADIUS);
 		Random random = new Random();
 		for (int j = 5; j < COLUMN; j += 5) {
 			int gap1 = random.nextInt(ROW / 10) + 1;

@@ -11,7 +11,7 @@ public class FailureRateTest {
 	@Test
 	public void test() {
 		double failureProbability = 0.01, successProbaiblity = 1 - failureProbability;
-		FailureRate fr = new FailureRate(new GridFailureGroup(5, 5), new GridGraph(5, 5), failureProbability);
+		FixedRadius fr = new FixedRadius(new GridFailureGroup(5, 5), new GridGraph(5, 5), failureProbability);
         Path<Point> path = new Path<>();
         path.addVertex(new Point(2, 0));
         path.addVertex(new Point(2, 1));

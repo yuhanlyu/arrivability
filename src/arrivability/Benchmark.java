@@ -62,7 +62,7 @@ public class Benchmark extends ConsoleHandler {
 	    Logger.getLogger("").addHandler(bm);
 	    GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN);
 		Graph<Point> g = GraphLoader.getGraph();
-		FailureRate model = new FailureRate(fg, g, FAILURE_PROBABILITY);
+		FixedRadius model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
 		MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, NUMBER_OF_ITERATIONS);
 		Point source = new Point(ROW / 2, 0);
 		Point target = new Point(ROW / 2, COLUMN - 1);
