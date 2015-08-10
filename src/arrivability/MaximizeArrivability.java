@@ -26,8 +26,6 @@ public class MaximizeArrivability {
 	 * @param i path enhance
 	 */
 	public MaximizeArrivability(Graph<Point> g, FailureRate fr, int number, int required, int generate, int iteration) {
-		//Map<Point, Map<Point, Point>> parent = new HashMap<>();
-		//Map<Point, Map<Point, Double>> distance = g.unweightedAPSP(parent);
 		numberOfRobots = number;
 		numberOfRequest = required;
 		numberOfGeneratedPaths = generate;
@@ -57,6 +55,6 @@ public class MaximizeArrivability {
 		logger.info("Path improvement takes " + (endTime - selectionTime) / 1000000 + " milliseconds");
     	long duration = (endTime - startTime) / 1000000;
     	logger.info("Search completed in " + duration + " milliseconds");    	
-    	return solution;
+    	return improved;
 	}
 }

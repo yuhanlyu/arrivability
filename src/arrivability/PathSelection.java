@@ -1,6 +1,8 @@
 package arrivability;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -14,9 +16,15 @@ import java.util.stream.IntStream;
 public class PathSelection {
 	
 	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
+	private static final int CACHE_SIZE = 100000;
 	private Graph<Point> g;
 	private FailureRate fr;
-	private Map<Path<Point>, Map<Path<Point>, Double>> distanceMap = new ConcurrentHashMap<>();
+	private Map<Path<Point>, Map<Path<Point>, Double>> distanceMap = Collections.synchronizedMap(new LinkedHashMap<Path<Point>, Map<Path<Point>, Double>>() {
+		@Override
+		protected boolean removeEldestEntry(Map.Entry oldest) {
+			return size() > CACHE_SIZE;  
+		}  
+	});
 	
 	/**
 	 * Constructor
@@ -39,6 +47,12 @@ public class PathSelection {
 		List<Path<Point>> sols = initialSolution(candidates, numberOfRobots);
 		long initialTime = System.nanoTime();
 		logger.info("Initial solution takes " + (initialTime - startTime) / 1000000 + " milliseconds");
+		distanceMap = Collections.synchronizedMap(new LinkedHashMap<Path<Point>, Map<Path<Point>, Double>>() {
+			@Override
+			protected boolean removeEldestEntry(Map.Entry oldest) {
+				return size() > CACHE_SIZE;  
+			}  
+		});
 		List<Path<Point>> result = localImprovement(sols, candidates, numberOfRequest);
 		long improveTime = System.nanoTime();
 		logger.info("Local improvementn takes " + (improveTime - initialTime) / 1000000 + " milliseconds");

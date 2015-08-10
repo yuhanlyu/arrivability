@@ -2,16 +2,17 @@ package arrivability;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -23,10 +24,39 @@ import java.util.stream.Collectors;
  */
 public class Graph <V extends Comparable<V>> {
 	private static final Logger logger = Logger.getLogger(Graph.class.getName());
+	private static final int CACHE_SIZE = 100000;
 	private Collection<V> vertices = new HashSet<>();                        // all vertices
 	private Map<V, Map<V, Double>> neighbors = new HashMap<>();              // adjacent lists
-	private Map<V, Map<V, Double>> apspUnweightedDistance = new ConcurrentHashMap<>(); // unweighted all pairs shortest path distance
-	private Map<V, Map<V, V>> apspUnweightedParent = new ConcurrentHashMap<>();        // unweighted all pairs shortes path parent mapping
+	// unweighted all pairs shortest path distance
+	private Map<V, Map<V, Double>> apspUnweightedDistance = null;
+	// unweighted all pairs shortes path parent mapping
+	private Map<V, Map<V, V>> apspUnweightedParent = null;
+	
+	/**
+	 * Constructor
+	 */
+	public Graph() {
+		reset();
+	}
+		
+	/**
+	 * Clear cache data
+	 */
+	public void reset() {
+		apspUnweightedDistance = Collections.synchronizedMap(new LinkedHashMap<V, Map<V, Double>>() {
+			@Override
+			protected boolean removeEldestEntry(Map.Entry oldest) {
+				return size() > CACHE_SIZE;  
+			}  
+		});
+		// unweighted all pairs shortes path parent mapping
+		apspUnweightedParent = Collections.synchronizedMap(new LinkedHashMap<V, Map<V, V>>() {
+			@Override
+			protected boolean removeEldestEntry(Map.Entry oldest) {
+			    return size() > CACHE_SIZE;  
+			}  
+		});
+	}
 	
 	/**
      * Return the vertex set
@@ -249,12 +279,12 @@ public class Graph <V extends Comparable<V>> {
      * @return a path connecting source and target
      */
     public Path<V> pathQuery(V source, V target) {
-    	if (!apspUnweightedDistance.containsKey(source)) {
+    	Map<V, V> d = apspUnweightedParent.computeIfAbsent(source, s -> {
     		Map<V, V> parent = new HashMap<>();
-        	Map<V, Double> distance = unweightedShortestPath(source, parent);
-        	apspUnweightedDistance.put(source, distance);
-        	apspUnweightedParent.put(source, parent);
-    	}
+    		Map<V, Double> distance = unweightedShortestPath(source, parent);
+    		apspUnweightedDistance.put(source, distance);
+        	return parent;
+    	});
     	return buildPathBackward(source, target, apspUnweightedParent);
     }
     

@@ -31,8 +31,8 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	public static final int ROW = 30;
-	public static final int COLUMN = 30;
+	public static final int ROW = 100;
+	public static final int COLUMN = 100;
 	private static final int RADIUS = 3;
 	private static final int SHIFT = 20;
 	private static final int SEPARATION = 3;
@@ -42,7 +42,7 @@ public class MineField extends Application {
 	private static final int MINE_RADIUS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	
-	private static final int NUMBER_OF_ROBOTS = 10;
+	private static final int NUMBER_OF_ROBOTS = 6;
 	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
 	private static final int NUMBER_OF_ITERATIONS = 100;

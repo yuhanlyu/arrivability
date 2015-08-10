@@ -2,11 +2,11 @@ package arrivability;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -14,9 +14,15 @@ import java.util.stream.IntStream;
 public class PathImprovement {
 	
 	private static final Logger logger = Logger.getLogger(PathImprovement.class.getName());
+	private static final int CACHE_SIZE = 100000;
 	private Graph<Point> g;
 	private FailureRate fr;
-	private Map<ShortCutKey, ShortCutResult> cache = new ConcurrentHashMap<>();
+	private Map<ShortCutKey, ShortCutResult> cache = Collections.synchronizedMap(new LinkedHashMap<ShortCutKey, ShortCutResult>() {
+		@Override
+		protected boolean removeEldestEntry(Map.Entry oldest) {
+			return size() > CACHE_SIZE;  
+		}  
+	});
 	
 	/**
 	 * Constructor
@@ -36,7 +42,8 @@ public class PathImprovement {
 	public List<Path<Point>> improve(List<Path<Point>> solution, int request, int numberOfIterations) {
 		logger.info("Start to improve");
 		List<Path<Point>> globalMax = new ArrayList<>(solution);
-		
+		g.reset();
+		System.gc();
 		double maxArrivability = fr.arrivability(solution, request);
 		for (int i = 0; i < numberOfIterations; ++i) {
 			if (!canImprove(solution, request)) {
