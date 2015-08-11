@@ -278,6 +278,31 @@ public class PathSelection {
 	}
 	
 	/**
+	 * Compute survivability of a set of paths
+	 * @param paths
+	 * @return survivability
+	 */
+	private double survivability(List<Path<Point>> paths) {
+		double sum = 0.0;
+		for (Path<Point> path1 : paths) 
+			for (Point obstacle: path1) 
+				for (int radius = 0; radius <g.vertexSet().size(); radius++) {
+					int affectedNum = 0;
+					for (Path<Point> path2 : paths)
+						if (!path1.equals(path2)) {
+							for (Point point: path2)
+								if (g.distanceQuery(obstacle,point)<=radius){
+									affectedNum++;
+									break;
+								}
+
+						}
+					sum+=affectedNum/(paths.size()-1)/path1.size();
+				}
+		return sum/paths.size();
+	}
+	
+	/**
 	 * Pick k random paths
 	 * @param candidates a set of paths
 	 * @param numberOfRoboots number of selected paths

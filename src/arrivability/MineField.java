@@ -31,8 +31,8 @@ public class MineField extends Application {
     private Group lines = new Group();
 	
 	// For drawing circles
-	public static final int ROW = 30;
-	public static final int COLUMN = 30;
+	public static final int ROW = 50;
+	public static final int COLUMN = 50;
 	private static final int RADIUS = 3;
 	private static final int SHIFT = 20;
 	private static final int SEPARATION = 3;
@@ -42,7 +42,7 @@ public class MineField extends Application {
 	private static final int NUMBER_OF_BLOCKERS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	
-	private static final int NUMBER_OF_ROBOTS = 2;
+	private static final int NUMBER_OF_ROBOTS = 5;
 	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
 	private static final int NUMBER_OF_ITERATIONS = 100;
@@ -54,8 +54,8 @@ public class MineField extends Application {
 	// For minimizing failure rate
 	private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
 	private Graph<Point> g = GraphLoader.getGraph();
-	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
-	private FailureRate model = new RandomRadius(fg, g, FAILURE_PROBABILITY, MINE_RADIUS + 1);
+	private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	//private FailureRate model = new RandomRadius(fg, g, FAILURE_PROBABILITY, MINE_RADIUS + 1);
 	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
 	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
 	private Point source = new Point(ROW / 2, 0);

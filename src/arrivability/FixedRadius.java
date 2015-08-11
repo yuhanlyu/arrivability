@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -187,6 +188,40 @@ public class FixedRadius extends FailureRate {
     	}
     	double result = arrivabilityFromBitSets(areas);
     	return result;
+    }
+    
+    /**
+     * Approximate arrivability by Monte Carlo
+     * @param NumofTimes number of iterations
+     * @param TargetSurvivals target number of survivals
+     * @param paths selected paths
+     * @return approximated arrivability
+     */
+    public double arrivabilityFromMonteCarlo(int NumofTimes, int TargetSurvivals,List<Path<Point>> paths) {
+    	int totSuccess = 0;
+    	Random random = new Random();
+    	boolean isAlive[] = new boolean[paths.size()];
+    	for (int i = 0; i<NumofTimes; i++) {
+    		for (int j=0; j<paths.size();j++) isAlive[j]=true;
+    		for (Point v : fg.vertexSet()) {
+    			double mytry = random.nextDouble();
+    			if (mytry>successProbability) {
+    				for (int j=0; j<paths.size();j++) {
+    					if (paths.get(j).contains(v)) isAlive[j]=false;
+    					if (isAlive[j])
+    						for (Point neighbor: fg.getForbiddenArea(v))
+    							if (paths.get(j).contains(neighbor)) {
+    								isAlive[j]=false; break;
+    							}
+    				}
+    			}
+    		}
+    		int totSurvivals = 0;
+    		for (int j=0; j<paths.size();j++) 
+    			if (isAlive[j]) totSurvivals++;
+    		if (totSurvivals>=TargetSurvivals) totSuccess++;
+    	}
+    	return (double) totSuccess/ NumofTimes;
     }
     
     /**
