@@ -13,7 +13,7 @@ public class GridGraph extends Graph<Point> {
 	 * @param n
 	 * @param m
 	 */
-	public GridGraph(int n, int m, int radius) {
+	public GridGraph(int n, int m) {
 		numberOfRows = n;
 		numberOfColumns = m;
 		
@@ -25,7 +25,7 @@ public class GridGraph extends Graph<Point> {
 		}
 		
 		// Initialize edges
-		List<int[]> direction = getDirections(radius);
+		List<int[]> direction = getDirections(1);
 		for (int i = 0; i < numberOfRows; ++i) {
 			for (int j = 0; j < numberOfColumns; ++j) {
 				for (int k = 0; k < direction.size(); ++k) {

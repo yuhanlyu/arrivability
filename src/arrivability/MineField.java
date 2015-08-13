@@ -33,16 +33,16 @@ public class MineField extends Application {
 	// For drawing circles
 	public static final int ROW = 50;
 	public static final int COLUMN = 50;
-	private static final int RADIUS = 3;
+	private static final int RADIUS = 1;
 	private static final int SHIFT = 20;
-	private static final int SEPARATION = 3;
+	private static final int SEPARATION = 10;
 
 	// For arrivability model
 	public static final int MINE_RADIUS = 1;
-	private static final int NUMBER_OF_BLOCKERS = 1;
+	private static final double NUMBER_OF_BLOCKERS = 1.5;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	
-	private static final int NUMBER_OF_ROBOTS = 5;
+	private static final int NUMBER_OF_ROBOTS = 3;
 	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
 	private static final int NUMBER_OF_ITERATIONS = 100;
@@ -53,7 +53,7 @@ public class MineField extends Application {
 	
 	// For minimizing failure rate
 	private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
-	private Graph<Point> g = GraphLoader.getGraph();
+	private Graph<Point> g = GraphLoader.getGraph("files/map");
 	private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
 	//private FailureRate model = new RandomRadius(fg, g, FAILURE_PROBABILITY, MINE_RADIUS + 1);
 	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
@@ -82,8 +82,8 @@ public class MineField extends Application {
             Circle circle = new Circle(SHIFT + p.getY() * RADIUS * SEPARATION, SHIFT + p.getX() * RADIUS * SEPARATION, RADIUS, Color.web("black", 0.05));
             circleMap.put(p, circle);
             circle.setStrokeType(StrokeType.CENTERED);
-            circle.setStroke(Color.web("black", 0.5));
-            circle.setStrokeWidth(2);
+            circle.setStroke(Color.web("gray", 0.5));
+            circle.setStrokeWidth(1);
             if (p.equals(source)) {
             	circle.setStroke(Color.web("red", 0.5));
                 circle.setStrokeWidth(5);	
