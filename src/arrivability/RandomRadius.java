@@ -109,7 +109,7 @@ public class RandomRadius extends FailureRate {
 	}
 	
 	public static void main(String[] args) {
-		RandomRadius rfr = new RandomRadius(new GridFailureGroup(5, 5, 1), new GridGraph(5, 5, 1), 0.01, 2);
+		RandomRadius rfr = new RandomRadius(new GridFailureGroup(5, 5, 1), new GridGraph(5, 5), 0.01, 2);
 		Path<Point> path = new Path<>();
         path.addVertex(new Point(2, 0));
         path.addVertex(new Point(2, 1));

@@ -75,7 +75,9 @@ public class Benchmark extends ConsoleHandler {
 		Point source = new Point(ROW / 2, 0);
 		Point target = new Point(ROW / 2, COLUMN - 1);
 		
-		ma.getSolution(source, target);
+		List<Path<Point>> paths = ma.getSolution(source, target);
+		//ResultWriter writer = new ResultWriter((GridGraph)g, model);
+		//writer.write(source, target, paths, "files/result");
 		bm.getResult();
 		String FILENAME = "demo_RandomRadius";
 	}

@@ -547,4 +547,12 @@ public class Graph <V extends Comparable<V>> {
 		}
 		return path;
 	}
+	
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		for (V vertex: vertexSet()) {
+			result.append(vertex.toString() + " ");
+		}
+		return result.toString();
+	}
 }

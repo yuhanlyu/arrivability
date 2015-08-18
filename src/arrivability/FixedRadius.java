@@ -433,7 +433,7 @@ public class FixedRadius extends FailureRate {
 			   5, 6, 6, 7, 6, 7, 7, 8}; 
     
     public static void main(String[] args) {
-    	GridGraph g = new GridGraph(5, 5, 1);
+    	GridGraph g = new GridGraph(5, 5);
         FixedRadius fr = new FixedRadius(new GridFailureGroup(5, 5, 1), g, 0.01);
         Path<Point> path = new Path<>();
         path.addVertex(new Point(3, 0));
