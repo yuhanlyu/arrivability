@@ -19,13 +19,18 @@ import java.util.stream.IntStream;
  */
 public class PathGeneration {
 	private Graph<Point> g; // Graph
+	private int mode;
+	public static final int RANDOM = 0;
+	public static final int REWEIGHT = 1;
+	public static final int NUMBER_OF_MODE = 2;
 	
 	/**
 	 * Constructor
 	 * @param arg_g graph
 	 */
-	public PathGeneration(Graph<Point> arg_g) {
+	public PathGeneration(Graph<Point> arg_g, int arg_mode) {
 		g = arg_g;
+		mode = arg_mode;
 	}
 
 	/**
@@ -36,8 +41,13 @@ public class PathGeneration {
 	 * @return a list of generated paths
 	 */
 	public List<Path<Point>> getPaths(int numberOfPaths, Point source, Point target) {
-		return randomPaths(numberOfPaths, source, target);
-		//return reweightPaths(numberOfPaths, source, target);
+		switch (mode) {
+			case RANDOM: 
+				return randomPaths(numberOfPaths, source, target);
+			case REWEIGHT:
+				return reweightPaths(numberOfPaths, source, target);
+		}
+		return null;
 	}
 	
 	/**

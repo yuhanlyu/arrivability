@@ -98,7 +98,7 @@ public class FixedRadius extends FailureRate {
     /**
 	 * Compute the arrivability of a set of paths
 	 * @param paths a set of paths
-	 * @param resuest number of requested robots
+	 * @param request number of requested robots
 	 * @return the arrivability
 	 */
 	public double arrivability(List<Path<Point>> paths, int request) {

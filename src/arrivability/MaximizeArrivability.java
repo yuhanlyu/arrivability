@@ -25,13 +25,13 @@ public class MaximizeArrivability {
 	 * @param s path selector
 	 * @param i path enhance
 	 */
-	public MaximizeArrivability(Graph<Point> g, FailureRate fr, int number, int required, int generate, int iteration) {
+	public MaximizeArrivability(Graph<Point> g, FailureRate fr, int number, int required, int generate, int genMode, int selMode, int iteration) {
 		numberOfRobots = number;
 		numberOfRequest = required;
 		numberOfGeneratedPaths = generate;
 		numberOfIteration = iteration;
-		pg = new PathGeneration(g);
-		ps = new PathSelection(g, fr);
+		pg = new PathGeneration(g, genMode);
+		ps = new PathSelection(g, fr, selMode);
 		pi = new PathImprovement(g, fr);
 	}
 	

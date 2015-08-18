@@ -2,10 +2,12 @@ package arrivability;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -19,10 +21,18 @@ import java.util.stream.IntStream;
  */
 public class PathSelection {
 	
+	public static final int MAX_SUM = 0;
+	public static final int MAX_MIN = 1;
+	public static final int MAX_NEAREST = 2;
+	public static final int MAX_SURVIVABILITY = 3;
+	public static final int FIRST_K = 4;
+	public static final int NUMBER_OF_MODE = 5;
+	
 	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
 	private static final int CACHE_SIZE = 100000;
 	private Graph<Point> g;
 	private FailureRate fr;
+	private int mode;
 	private Map<Path<Point>, Map<Path<Point>, Double>> distanceMap = Collections.synchronizedMap(new LinkedHashMap<Path<Point>, Map<Path<Point>, Double>>() {
 		@Override
 		protected boolean removeEldestEntry(Map.Entry oldest) {
@@ -35,9 +45,10 @@ public class PathSelection {
 	 * @param arg_g graph
 	 * @param arg_fr failure rate computation
 	 */
-	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr) {
+	public PathSelection(Graph<Point> arg_g, FailureRate arg_fr, int arg_mode) {
 		g = arg_g;
 		fr = arg_fr;
+		mode = arg_mode;
 	}
 
 	/**
@@ -70,9 +81,19 @@ public class PathSelection {
 	 * @return an initial solution
 	 */
 	private List<Path<Point>> initialSolution(List<Path<Point>> candidates, int numberOfRobots) {
-		//return randomK(paths, numberOfRobots);
-		//return maxNeighborDistance(candidates, numberOfRobots);
-		return maxObj(candidates, numberOfRobots, this::sumNeighborDistance);
+		switch (mode) {
+			case MAX_SUM: 
+				return maxObj(candidates, numberOfRobots, this::sumDistance);
+			case MAX_MIN:
+				return maxObj(candidates, numberOfRobots, this::minDistance);
+			case MAX_NEAREST:
+				return maxObj(candidates, numberOfRobots, this::sumNeighborDistance);
+			case MAX_SURVIVABILITY:
+				return maxObj(candidates, numberOfRobots, this::survivability);
+			case FIRST_K:
+				return firstK(candidates, numberOfRobots);
+		}
+		return null;
 	}
 	
 	/**
@@ -285,20 +306,25 @@ public class PathSelection {
 	private double survivability(List<Path<Point>> paths) {
 		double sum = 0.0;
 		for (Path<Point> path1 : paths) 
-			for (Point obstacle: path1) 
+			for (Point obstacle: path1)  {
+				Set<Path<Point>> otherpaths = new HashSet<>(paths);
+				otherpaths.remove(path1);
+				int affectedNum = 0;
 				for (int radius = 0; radius <g.vertexSet().size(); radius++) {
-					int affectedNum = 0;
-					for (Path<Point> path2 : paths)
-						if (!path1.equals(path2)) {
-							for (Point point: path2)
+					if (otherpaths.isEmpty()) {
+						sum += (g.vertexSet().size() - radius) / path1.size();
+						break;
+					}
+					for (Path<Point> path2 : new HashSet<>(otherpaths))
+						for (Point point: path2)
 								if (g.distanceQuery(obstacle,point)<=radius){
 									affectedNum++;
+									otherpaths.remove(path2);
 									break;
 								}
-
-						}
 					sum+=affectedNum/(paths.size()-1)/path1.size();
 				}
+			}
 		return sum/paths.size();
 	}
 	

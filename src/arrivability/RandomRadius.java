@@ -38,7 +38,14 @@ public class RandomRadius extends FailureRate {
 	public double arrivability(Iterable<Point> vertexset) {
 		Map<Point, Integer> distanceMap = fg.unweightedDistance(vertexset);
 		double arrivability = 1.0;
-		for (Point point : vertexSet()) {
+		for (Point point : fg.vertexSet()) {
+			assert(distanceMap.get(point) != null);
+			if (distanceMap == null) 
+				System.out.println("Map is null");
+			if (distanceMap.get(point) == null) 
+				System.out.println("Distance is null" + fg.vertexSet().contains(point));
+			if (point == null)
+				System.out.println("Point is null");
 			arrivability *= (1 - failureProbability * (Math.pow(1 - geometricParameter, distanceMap.get(point))));
 		}
 		return arrivability;

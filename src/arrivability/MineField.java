@@ -46,6 +46,8 @@ public class MineField extends Application {
 	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
 	private static final int NUMBER_OF_ITERATIONS = 100;
+	private static final int genMode = 0;
+	private static final int selMode = 0;
 	
 	
 	//private Arrivability model = new FixedRadiusHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
@@ -63,7 +65,7 @@ public class MineField extends Application {
 	
 	
 	// For maximizing arrivability
-	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, NUMBER_OF_ITERATIONS);
+	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, genMode, selMode, NUMBER_OF_ITERATIONS);
 	
 	// For auxiliary information
 	private Text info = new Text(10, 10, "#Rows is " + ROW + " #Columns is " + COLUMN);
