@@ -1,5 +1,6 @@
 package arrivability;
 
+import java.util.List;
 import java.util.Scanner;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;
@@ -7,13 +8,13 @@ import java.util.logging.Logger;
 
 public class Benchmark extends ConsoleHandler {
 	
-	private static final int ROW = 50;
-	private static final int COLUMN = 50;
+	private static final int ROW = 30;
+	private static final int COLUMN = 30;
 	private static final int NUMBER_OF_BLOCKERS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	private static final int MINE_RADIUS = 1;
-	private static final int NUMBER_OF_ROBOTS = 6;
-	private static final int NUMBER_OF_REQUEST = 2;
+	private static final int NUMBER_OF_ROBOTS = 3;
+	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
 	private static final int NUMBER_OF_ITERATIONS = 10;
 	
@@ -68,7 +69,9 @@ public class Benchmark extends ConsoleHandler {
 		Point source = new Point(ROW / 2, 0);
 		Point target = new Point(ROW / 2, COLUMN - 1);
 		
-		ma.getSolution(source, target);
+		List<Path<Point>> paths = ma.getSolution(source, target);
+		ResultWriter writer = new ResultWriter((GridGraph)g, model);
+		writer.write(source, target, paths, "files/result");
 		bm.getResult();
 	}
 }
