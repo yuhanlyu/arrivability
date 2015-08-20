@@ -13,10 +13,10 @@ public class Benchmark extends ConsoleHandler {
 	private static int NUMBER_OF_BLOCKERS = 1;
 	private static double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	private static int MINE_RADIUS = 1;
-	private static int NUMBER_OF_ROBOTS = 6;
+	private static int NUMBER_OF_ROBOTS = 3;
 	private static int NUMBER_OF_REQUEST = 1;
 	private static int NUMBER_OF_GENERATE = 100;
-	private static int NUMBER_OF_ITERATIONS = 100;
+	private static int NUMBER_OF_ITERATIONS = 3;
 	
 	private static boolean[] modeForSelection = new boolean[PathSelection.NUMBER_OF_MODE];
 	private static boolean[] modeForGeneration = new boolean[PathGeneration.NUMBER_OF_MODE];
@@ -140,10 +140,11 @@ public class Benchmark extends ConsoleHandler {
 	}
 	
 	public static void main( String[] args ) {
-		demo_RandomRadius();
-		demo_kArrivability();
-		demo_RandomRadius_kArrivability();
+		//demo_RandomRadius();
+		//demo_kArrivability();
+		//demo_RandomRadius_kArrivability();
 		demo_NumofBlockers();
+		/*
 		for (int i = 0; i < PathSelection.NUMBER_OF_MODE; i++) modeForSelection[i]=true;
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++) modeForGeneration[i]=true;
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++)
@@ -164,6 +165,7 @@ public class Benchmark extends ConsoleHandler {
 						time[i][j]=totalTime;
 						quality[i][j]=model.arrivability(solution, NUMBER_OF_REQUEST);
 					}
+		*/
 						
 	}
 }
