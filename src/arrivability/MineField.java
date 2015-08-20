@@ -42,10 +42,10 @@ public class MineField extends Application {
 	private static final double NUMBER_OF_BLOCKERS = 1.5;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	
-	private static final int NUMBER_OF_ROBOTS = 3;
+	private static final int NUMBER_OF_ROBOTS = 8;
 	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
-	private static final int NUMBER_OF_ITERATIONS = 100;
+	private static final int NUMBER_OF_ITERATIONS = 3;
 	private static final int genMode = 0;
 	private static final int selMode = 0;
 	
@@ -60,8 +60,10 @@ public class MineField extends Application {
 	//private FailureRate model = new RandomRadius(fg, g, FAILURE_PROBABILITY, MINE_RADIUS + 1);
 	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
 	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
-	private Point source = new Point(ROW / 2, 0);
-	private Point target = new Point(ROW / 2, COLUMN - 1);
+	//private Point source = new Point(ROW / 2, 0);
+	//private Point target = new Point(ROW / 2, COLUMN - 1);
+	private Point source = new Point(17, 10);
+	private Point target = new Point(25, 25);
 	
 	
 	// For maximizing arrivability

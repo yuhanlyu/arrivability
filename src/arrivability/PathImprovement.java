@@ -220,7 +220,7 @@ public class PathImprovement {
 			}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
 		}
 		
-		if (result.sum > fr.arrivability(initial, request)) {
+		if (result.sum > fr.arrivability(initial, request) + 1e-7) {
 			initial.set(result.removeIndex, result.newPath);
 			return true;
 		}
