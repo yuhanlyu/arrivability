@@ -76,8 +76,6 @@ public class Benchmark extends ConsoleHandler {
 		Point target = new Point(ROW / 2, COLUMN - 1);
 		
 		List<Path<Point>> paths = ma.getSolution(source, target);
-		//ResultWriter writer = new ResultWriter((GridGraph)g, model);
-		//writer.write(source, target, paths, "files/result");
 		bm.getResult();
 		String FILENAME = "demo_RandomRadius";
 	}
@@ -133,16 +131,18 @@ public class Benchmark extends ConsoleHandler {
 			Point source = new Point(ROW / 2, 0);
 			Point target = new Point(ROW / 2, COLUMN - 1);
 		
-			ma.getSolution(source, target);
+			List<Path<Point>> paths = ma.getSolution(source, target);
 			bm.getResult();
-			String FILENAME = "demo_"+NUMBER_OF_BLOCKERS+" Blockers";
+			String FILENAME = "files/demo_"+NUMBER_OF_BLOCKERS+"Blockers";
+			ResultWriter writer = new ResultWriter((GridGraph)g, model);
+			writer.write(source, target, paths, FILENAME);
 		}
 	}
 	
 	public static void main( String[] args ) {
-		demo_RandomRadius();
-		demo_kArrivability();
-		demo_RandomRadius_kArrivability();
+		//demo_RandomRadius();
+		//demo_kArrivability();
+		//demo_RandomRadius_kArrivability();
 		demo_NumofBlockers();
 		for (int i = 0; i < PathSelection.NUMBER_OF_MODE; i++) modeForSelection[i]=true;
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++) modeForGeneration[i]=true;
