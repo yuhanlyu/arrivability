@@ -46,22 +46,25 @@ public class PathImprovement {
 	 */
 	public List<Path<Point>> improve(List<Path<Point>> solution, PathGeneration pg, int request, int numberOfIterations) {
 		logger.info("Start to improve");
+		int last = 0;
 		List<Path<Point>> globalMax = new ArrayList<>(solution);
 		g.reset();
 		System.gc();
 		double maxArrivability = fr.arrivability(solution, request);
 		for (int i = 0; i < numberOfIterations; ++i) {
-			if (!canImprove(solution, request)) {
-				logger.fine("Cannot improve, escape instead");
-				escape(solution, pg);
-			} else {
+			while (canImprove(solution, request)) {
 				double arrivability = fr.arrivability(solution, request);
 				if (arrivability > maxArrivability) {
 					logger.info("Improved");
+					if (last != i) {
+						logger.info("Useful escape");
+					}
+					last = i;
 					maxArrivability = arrivability;
 					globalMax = new ArrayList<>(solution);
 				}
 			}
+			escape(solution, pg);
 		}
 		logger.info("Local improvement completed with arrivability " + maxArrivability);
 		return globalMax;
@@ -217,7 +220,7 @@ public class PathImprovement {
 			}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
 		}
 		
-		if (result.sum > fr.arrivability(initial, request)) {
+		if (result.sum > fr.arrivability(initial, request) + 1e-7) {
 			initial.set(result.removeIndex, result.newPath);
 			return true;
 		}

@@ -20,6 +20,16 @@ public class FailureGroup <V extends Comparable<V>> {
 	 */
 	public FailureGroup() { }
 	
+	public FailureGroup(Graph<V> g, double radius) {
+		for (V p : g.vertexSet())
+			addVertex(p);
+		for (V p : g.vertexSet()) {
+			for (V q : g.getNeighbors(p)) {
+				addForbidden(p, q);
+			}
+		}
+	}
+	
 	/**
      * Return the vertexset
      * @return the veretx set
@@ -44,8 +54,8 @@ public class FailureGroup <V extends Comparable<V>> {
     
     /**
      * Add require vertex to the forbidden set of source
-     * @param source
-     * @param require
+     * @param source source point
+     * @param require require point
      */
     public void addForbidden(V source, V require) {
     	if (!vertices.contains(source) || !vertices.contains(require)) {

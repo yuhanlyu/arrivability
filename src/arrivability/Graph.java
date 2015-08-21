@@ -548,6 +548,7 @@ public class Graph <V extends Comparable<V>> {
 		return path;
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		for (V vertex: vertexSet()) {
