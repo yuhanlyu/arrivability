@@ -1,6 +1,8 @@
 package arrivability;
 
 import java.awt.Polygon;
+import java.awt.geom.Area;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -121,12 +123,11 @@ public class GraphLoader {
 	 * @param filename a file storing osm
 	 * @return a Graph
 	 */
-	public static Graph<Point> Hanover(String filename, Point[] st) {
+	public static Graph<Point> Hanover(String filename, int numberOfRows, int numberOfColumns) {
 		Charset charset = Charset.forName("UTF-8");
 		Path file = FileSystems.getDefault().getPath(".", filename);
-		double minlon = 0, maxlon = 0, minlat = 0, maxlat = 0;
 		Map<Long, Point2D.Double> nodeMap = new HashMap<>();
-		Set<List<Long>> ways = new HashSet<>();
+		Set<List<Long>> buildings = new HashSet<>();
 		Map<Long, Point2D.Double> resultNodeMap = new HashMap<>();
 		try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
 			System.setProperty("jdk.xml.entityExpansionLimit", "0");
@@ -136,80 +137,14 @@ public class GraphLoader {
 				XMLEvent e = read.nextEvent();
 				if (e.isStartElement()) {
 					StartElement element = e.asStartElement();
-					if (element.getName().getLocalPart().equals("bounds")) {
-						Iterator it = element.getAttributes();
-						while (it.hasNext()) {
-							Attribute att = (Attribute) it.next();
-							if (att.getName().toString().equals("minlon"))
-								minlon = Double.parseDouble(att.getValue());
-							else if (att.getName().toString().equals("maxlat"))
-								maxlat = Double.parseDouble(att.getValue());
-							else if (att.getName().toString().equals("minlat"))
-								minlat = Double.parseDouble(att.getValue());
-							else if (att.getName().toString().equals("maxlon"))
-								maxlon = Double.parseDouble(att.getValue());
-						}
-					} else if (element.getName().getLocalPart().equals("node")) {
-						Iterator<?> it = element.getAttributes();
-						double lon = 0, lat = 0;
-						long id = 0;
-						while (it.hasNext()) {
-							Attribute att = (Attribute) it.next();
-							if (att.getName().toString().equals("lon"))
-								lon = Double.parseDouble(att.getValue());
-							else if (att.getName().toString().equals("lat"))
-								lat = Double.parseDouble(att.getValue());
-							else if (att.getName().toString().equals("id"))
-								id = Long.parseLong(att.getValue());
-							else if (att.getName().toString().equals("user"))
-								//if (!att.getValue().equals("woodpeck_fixbot") &&
-								//	!att.getValue().equals("lewis_pusey"))
-								//	id = 0;
-								;
-						}
-						if (id != 0 && MIN_LON <= lon && lon <= MAX_LON && MIN_LAT <= lat && lat <= MAX_LAT)
-							nodeMap.put(id, new Point2D.Double(lon, lat));
+					if (element.getName().getLocalPart().equals("node")) {
+						parseNode(nodeMap, element);
 					} else if (element.getName().getLocalPart().equals("way")){
-						XMLEvent ee = read.nextEvent();
-						List<Long> way = new ArrayList<>();
-						boolean flag = true;
-						while (read.hasNext()) {
-							ee = read.nextEvent();
-							if (ee.isEndElement())
-								break;
-							if (ee.isStartElement()) {
-								StartElement elm2 = ee.asStartElement();
-								if (elm2.getName().getLocalPart().equals("nd")) {
-									Iterator<?> it = elm2.getAttributes();
-									long id = 0;
-									while (it.hasNext()) {
-										Attribute att = (Attribute) it.next();
-										if (att.getName().toString().equals("ref"))
-											id = Long.parseLong(att.getValue());
-									}
-									if (nodeMap.containsKey(id)) {
-										way.add(id);
-										resultNodeMap.put(id, nodeMap.get(id));
-									}
-								} else if (elm2.getName().getLocalPart().equals("tag")) {
-									Iterator<?> it = elm2.getAttributes();
-									while (it.hasNext()) {
-										Attribute att = (Attribute) it.next();
-										if (att.getName().toString().equals("k"))
-											if (att.getValue().equals("building"))
-												flag = false;
-												//flag = true;
-									}
-								}
-								ee = read.nextEvent();
-							}
-						}
-						if (flag)
-							ways.add(way);
+						parseBuilding(nodeMap, buildings, resultNodeMap, read);
 					}
 				}
 			}
-			return buildGraph(resultNodeMap, ways, st);
+			return buildGraph(numberOfRows, numberOfColumns, resultNodeMap, buildings);
 		} catch (IOException x) {
 		    System.err.format("IOException: %s%n", x);
 		} catch (XMLStreamException e) {
@@ -218,9 +153,85 @@ public class GraphLoader {
 		}
 		return null;
 	}
+
+	/**
+	 * Parse for a way
+	 * @param nodeMap mapping between id and points
+	 * @param buildings list of ways
+	 * @param resultNodeMap nodes that are used in ways
+	 * @param read current parsing position
+	 * @throws XMLStreamException
+	 */
+	private static void parseBuilding(Map<Long, Point2D.Double> nodeMap, Set<List<Long>> buildings,
+			Map<Long, Point2D.Double> resultNodeMap, XMLEventReader read) throws XMLStreamException {
+		XMLEvent ee = read.nextEvent();
+		List<Long> way = new ArrayList<>();
+		boolean isBuilding = false;
+		while (read.hasNext()) {
+			ee = read.nextEvent();
+			if (ee.isEndElement())
+				break;
+			if (ee.isStartElement()) {
+				StartElement elm2 = ee.asStartElement();
+				if (elm2.getName().getLocalPart().equals("nd")) {
+					Iterator<?> it = elm2.getAttributes();
+					long id = 0;
+					while (it.hasNext()) {
+						Attribute att = (Attribute) it.next();
+						if (att.getName().toString().equals("ref"))
+							id = Long.parseLong(att.getValue());
+					}
+					if (nodeMap.containsKey(id)) {
+						way.add(id);
+						resultNodeMap.put(id, nodeMap.get(id));
+					}
+				} else if (elm2.getName().getLocalPart().equals("tag")) {
+					Iterator<?> it = elm2.getAttributes();
+					while (it.hasNext()) {
+						Attribute att = (Attribute) it.next();
+						if (att.getName().toString().equals("k"))
+							if (att.getValue().equals("building"))
+								isBuilding = true;
+					}
+				}
+				ee = read.nextEvent();
+			}
+		}
+		if (isBuilding && way.size() > 0) {
+			buildings.add(way);
+		}
+	}
+
+	/**
+	 * Parse for a node in a map
+	 * @param nodeMap store information of nodes
+	 * @param element parsing position
+	 */
+	private static void parseNode(Map<Long, Point2D.Double> nodeMap, StartElement element) {
+		Iterator<?> it = element.getAttributes();
+		double lon = 0, lat = 0;
+		long id = 0;
+		while (it.hasNext()) {
+			Attribute att = (Attribute) it.next();
+			if (att.getName().toString().equals("lon"))
+				lon = Double.parseDouble(att.getValue());
+			else if (att.getName().toString().equals("lat"))
+				lat = Double.parseDouble(att.getValue());
+			else if (att.getName().toString().equals("id"))
+				id = Long.parseLong(att.getValue());
+		}
+		if (id != 0 && MIN_LON <= lon && lon <= MAX_LON && MIN_LAT <= lat && lat <= MAX_LAT)
+			nodeMap.put(id, new Point2D.Double(lon, lat));
+	}
 	
-	public static Graph<Point> buildGraph(Map<Long, Point2D.Double> nodeMap, Set<List<Long>> ways, Point[] st) {
-		Graph<Point> g = new Graph<>();
+	/**
+	 * 
+	 * @param nodeMap
+	 * @param buildings
+	 * @param st
+	 * @return
+	 */
+	public static Graph<Point> buildGraph(int numberOfRows, int numberOfColumns, Map<Long, Point2D.Double> nodeMap, Set<List<Long>> buildings) {
 		double minlon = Double.POSITIVE_INFINITY, maxlon = Double.NEGATIVE_INFINITY;
 		double minlat = Double.POSITIVE_INFINITY, maxlat = Double.NEGATIVE_INFINITY;
 		for (Point2D.Double p : nodeMap.values()) {
@@ -233,40 +244,39 @@ public class GraphLoader {
 			if (p.getY() < minlat)
 				minlat = p.getY();
 		}
-		double xFactor = 100 / (maxlon - minlon), yFactor = 100 / (maxlat - minlat);
+		double xFactor = numberOfColumns / (maxlon - minlon), yFactor = numberOfRows / (maxlat - minlat);
 		Map<Long, Point> vertexMap = new HashMap<>();
-		Map<Point, Long> inverse = new HashMap<>();
+		// Latitude ~ y ~ row
+		// Longitude ~ x ~ column
+		// Construct mapping between id and points
 		for (Long id : nodeMap.keySet()) {
 			Point2D.Double p = nodeMap.get(id);
 			Point point = new Point((maxlat - p.getY()) * yFactor, (p.getX() - minlon) * xFactor);
-			if (!inverse.containsKey(point)) {
-				g.addVertex(point);
-			}
 			vertexMap.put(id, point);
-			inverse.put(point,  id);
 		}
-		for (List<Long> way : ways) {
-			for (int i = 0; i < way.size() - 1; ++i) {
-				Point p1 = vertexMap.get(way.get(i));
-				Point p2 = vertexMap.get(way.get(i + 1));
-				g.addEdge(p1, p2);
-				g.addEdge(p2, p1);
+		// Construct all obstacles in terms of row and columns
+		Area blocked = new Area();
+		for (List<Long> building : buildings) {
+			Path2D.Double obstacle = new Path2D.Double();
+			obstacle.moveTo(vertexMap.get(building.get(0)).getX(), vertexMap.get(building.get(0)).getY());
+			for (int i = 1; i < building.size(); ++i) {
+				obstacle.lineTo(vertexMap.get(building.get(i)).getX(), vertexMap.get(building.get(i)).getY());	
 			}
+			blocked.add(new Area(obstacle));
 		}
-		for (Point p : new HashSet<Point>(g.vertexSet())) {
-			if (g.getNeighbors(p).size() == 0)
-				g.removeVertex(p);
-		}
-		for (Long id : nodeMap.keySet()) {
-			System.out.println(id + " " + nodeMap.get(id));
-		}
-		st[0] = vertexMap.get(194783106L);
-		st[1] = vertexMap.get(194703843L);
+		GridGraph g = new GridGraph(numberOfRows, numberOfColumns);
+		for (int i = 0; i < numberOfRows; ++i) {
+	    	for (int j = 0; j < numberOfColumns; ++j) {
+	    		if (blocked.contains(i, j)) {
+	    			g.removeVertex(new Point(i, j));
+	    		}
+	    	}
+	    }
 		return g;
 	}
 	
 	public static void main(String[] args) {
 		//GraphLoader.getGraph("files/map");
-		GraphLoader.Hanover("files/Hanover.osm", new Point[2]);
+		GraphLoader.Hanover("files/Hanover.osm", 100, 100);
 	}
 }
