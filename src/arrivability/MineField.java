@@ -36,11 +36,11 @@ public class MineField extends Application {
 	public static final int COLUMN = 50;
 	private static final int RADIUS = 1;
 	private static final int SHIFT = 20;
-	private static final int SEPARATION = 10;
+	private static final int SEPARATION = 5;
 
 	// For arrivability model
-	public static final int MINE_RADIUS = 5;
-	private static final double NUMBER_OF_BLOCKERS = 0.5;
+	public static final int MINE_RADIUS = 1;
+	private static final double NUMBER_OF_BLOCKERS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	
 	private static final int NUMBER_OF_ROBOTS = 3;
@@ -50,28 +50,44 @@ public class MineField extends Application {
 	private static final int genMode = 0;
 	private static final int selMode = 0;
 	
-	
-	//private Arrivability model = new FixedRadiusHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
-	//private Arrivability model = new FixedRadiusPoissonHardDisk(ROW, COLUMN, NUMBER_OF_BLOCKERS, MINE_RADIUS);
-	
-	// For minimizing failure rate
+		
+	// For fixed radius model
 	//private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
-	//private Graph<Point> g = GraphLoader.getGraph("files/map");
-	private Point[] st = new Point[2];
-	private Graph<Point> g = GraphLoader.Hanover("files/Hanover.osm", st);
-	private FailureGroup<Point> fg = new FailureGroup<>(g, 5.0);
-	private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
-	//private FailureRate model = new RandomRadius(fg, g, FAILURE_PROBABILITY, MINE_RADIUS + 1);
-	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
-	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
+	//private Graph<Point> g = GraphLoader.getGraph();
+	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
 	//private Point source = new Point(ROW / 2, 0);
 	//private Point target = new Point(ROW / 2, COLUMN - 1);
+	
+	// For random radius model
+	//private FailureRate model = new RandomRadius(fg, g, FAILURE_PROBABILITY, MINE_RADIUS + 1);
+	//private Graph<Point> g = GraphLoader.getGraph();
+	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	//private Point source = new Point(ROW / 2, 0);
+	//private Point target = new Point(ROW / 2, COLUMN - 1);
+	
+	// For easy map
+	//private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
+	//private Graph<Point> g = GraphLoader.getGraph("files/map");
+	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
 	//private Point source = new Point(17, 10);
 	//private Point target = new Point(35, 35);
-	private Point source = st[0];
-	private Point target = st[1];
 	
+	// For random map
+	//private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
+	//private Graph<Point> g = GraphLoader.getGraph("files/random_map");
+	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	//private Point source = new Point(ROW / 2, 0);
+	//private Point target = new Point(ROW / 2, COLUMN - 1);
 	
+	// For Hanover map
+	private Graph<Point> g = GraphLoader.Hanover("files/Hanover.osm", 100, 100);
+	private GridFailureGroup fg = new GridFailureGroup(100, 100, MINE_RADIUS);
+	private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	private Point source = new Point(28, 68);
+	private Point target = new Point(65, 40);
+	
+	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
+	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
 	// For maximizing arrivability
 	private MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, genMode, selMode, NUMBER_OF_ITERATIONS);
 	
@@ -115,10 +131,10 @@ public class MineField extends Application {
 			for (Point forbidden : model.getForbiddenArea(p)) {
 				if (model.vertexSet().contains(forbidden))
 					fg.add(circleMap.get(forbidden));
-				Circle start = circleMap.get(p);
-				Circle end = circleMap.get(forbidden);
-				Line line = new Line(start.getCenterX(), start.getCenterY(), end.getCenterX(), end.getCenterY());
-				edges.getChildren().add(line);
+				//Circle start = circleMap.get(p);
+				//Circle end = circleMap.get(forbidden);
+				//Line line = new Line(start.getCenterX(), start.getCenterY(), end.getCenterX(), end.getCenterY());
+				//edges.getChildren().add(line);
 			}
 			circleMap.get(p).setOnMouseEntered(new EventHandler<MouseEvent>() {
 	        	 
@@ -126,7 +142,9 @@ public class MineField extends Application {
 	            public void handle(MouseEvent mouseEvent) {
 	            	for (Circle forbidden : fg) {
 	            		forbidden.setStrokeWidth(5.0);
+	            		System.out.println(p.toString());
 	            	}
+	            	
 	            }
 	         
 	        });
@@ -251,7 +269,7 @@ public class MineField extends Application {
 							Circle start = pointToCircle.get(previous);
 							Circle end = pointToCircle.get(p);
 							Line line = new Line(start.getCenterX(), start.getCenterY(), end.getCenterX(), end.getCenterY());
-							line.setStrokeWidth(5);
+							line.setStrokeWidth(3);
 							lines.getChildren().add(line);
 						}
 						previous = p;
