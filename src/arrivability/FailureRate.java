@@ -80,6 +80,8 @@ public abstract class FailureRate {
      */
     public Collection<Point> forbiddenArea(Iterable<Point> vertexset) {
     	HashSet<Point> result = new HashSet<>();
+// java.lang.IllegalArgumentException: Try to find neighbors of a non-existing vertex
+// for (Point vertex : vertexset) {
     	for (Point vertex : vertexset) {
     		result.addAll(fg.getForbiddenArea(vertex));
     		result.add(vertex);

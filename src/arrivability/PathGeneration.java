@@ -23,6 +23,7 @@ public class PathGeneration {
 	public static final int RANDOM = 0;
 	public static final int REWEIGHT = 1;
 	public static final int NUMBER_OF_MODE = 2;
+	private Random rand = new Random(100);
 	
 	/**
 	 * Constructor
@@ -133,7 +134,6 @@ public class PathGeneration {
 		inqueue.add(source);
 		myqueue.add(source);
 		parent.put(source, null);
-		Random rand = new Random();
 		while (true) {
 			int index = rand.nextInt(myqueue.size());
 			Point node = myqueue.remove(index);

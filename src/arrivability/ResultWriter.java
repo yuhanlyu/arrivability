@@ -31,10 +31,10 @@ public class ResultWriter {
 	 * @param paths paths between source and target
 	 * @param filename filename to be outputted
 	 */
-	public void write(Point source, Point target, List<arrivability.Path<Point>> paths, String filename) {
+	public void write(int ROW, int COLUMN, Point source, Point target, List<arrivability.Path<Point>> paths, String filename) {
 		Path file = FileSystems.getDefault().getPath(".", filename);
 		try (PrintStream writer = new PrintStream(Files.newOutputStream(file, StandardOpenOption.CREATE))) {
-			writer.println(graph.getNumberOfRows() + " " + graph.getNumberOfColumns());
+			writer.println(ROW + " " + COLUMN);
 			writer.println(graph.vertexSet().size());
 			writer.println(graph.toString());
 			writer.println(source.toString());

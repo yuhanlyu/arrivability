@@ -1,6 +1,10 @@
 package arrivability;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -21,12 +25,14 @@ import java.util.stream.IntStream;
  */
 public class PathSelection {
 	
-	public static final int MAX_SUM = 0;
+	public static final int OPTIMAL = 0;
 	public static final int MAX_MIN = 1;
 	public static final int MAX_NEAREST = 2;
 	public static final int MAX_SURVIVABILITY = 3;
 	public static final int FIRST_K = 4;
-	public static final int NUMBER_OF_MODE = 5;
+	public static final int MAX_SUM = 5;
+	public static final int RANDOM = 6;
+	public static final int NUMBER_OF_MODE = 7;
 	
 	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
 	private static final int CACHE_SIZE = 100000;
@@ -68,9 +74,11 @@ public class PathSelection {
 				return size() > CACHE_SIZE;  
 			}  
 		});
+		logger.info("Arrivability before path selection "+fr.arrivability(sols, numberOfRequest));
 		List<Path<Point>> result = localImprovement(sols, candidates, numberOfRequest);
 		long improveTime = System.nanoTime();
 		logger.info("Local improvementn takes " + (improveTime - initialTime) / 1000000 + " milliseconds");
+		logger.info("Arrivability after local improvement "+fr.arrivability(result, numberOfRequest));
 		return result;
 	}
 	
@@ -92,6 +100,10 @@ public class PathSelection {
 				return maxObj(candidates, numberOfRobots, this::survivability);
 			case FIRST_K:
 				return firstK(candidates, numberOfRobots);
+			case OPTIMAL:
+				return optObj(candidates, numberOfRobots, this::sumDistance);
+			case RANDOM:
+				return ranObj(candidates, numberOfRobots);
 		}
 		return null;
 	}
@@ -112,6 +124,48 @@ public class PathSelection {
 			;
 		}
 		return initial;
+	}
+	
+	/**
+	 * Find the optimal solution
+	 * @param candidates all candidates
+	 * @param numberOfRobots number of robots
+	 * @param objective objective function
+	 * @return an initial solution
+	 */
+	private List<Path<Point>> optObj(List<Path<Point>> candidates, int numberOfRobots, 
+			Function<List<Path<Point>>, Double> objective) {
+
+		BigInteger comb = new BigInteger("1");
+		comb = comb.shiftLeft(numberOfRobots);
+		comb = comb.subtract(new BigInteger("1"));
+		BigInteger goal = new BigInteger("1");
+		goal = goal.shiftLeft(candidates.size());
+		double max = Double.NEGATIVE_INFINITY;
+		List<Path<Point>> result = null;
+		while (comb.compareTo(goal) < 0) {
+			List<Path<Point>> temp = new ArrayList<>();
+			for (int i = 0; i < comb.bitLength(); ++i) {
+				if (comb.testBit(i)) {
+					temp.add(candidates.get(i));
+				}
+			}
+			double obj = objective.apply(temp);
+			if (obj > max) {
+				max = obj;
+				result = temp;
+			}
+			BigInteger x = comb.and(comb.negate());
+			BigInteger y = comb.add(x);
+			comb = comb.xor(y);
+			while (x.compareTo(new BigInteger("1")) > 0) {
+				comb = comb.shiftRight(1);
+				x = x.shiftRight(1);
+			}
+			comb = comb.shiftRight(2);
+			comb = comb.or(y);
+		}
+		return result;
 	}
 	
 	/**
@@ -354,6 +408,26 @@ public class PathSelection {
 		int count = 0;
 		for (Path<Point> path : candidates) {
 			result[count] = path;
+			++count;
+			if (count == numberOfRobots)
+				break;
+		}
+		return Arrays.asList(result);
+	}
+	
+	/**
+	 * Pick random K paths
+	 * @param candidates a set of paths
+	 * @param numberOfRoboots number of selected paths
+	 * @return a set of paths
+	 */
+	private List<Path<Point>> ranObj(List<Path<Point>> candidates, int numberOfRobots) {
+		Path<Point>[] result = new Path[numberOfRobots];
+		Random rand = new Random();
+		int count = 0;
+		while (true) {
+			int randidx = rand.nextInt(candidates.size());
+			result[count] = candidates.get(randidx);
 			++count;
 			if (count == numberOfRobots)
 				break;

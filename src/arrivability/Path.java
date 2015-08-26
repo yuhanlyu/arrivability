@@ -169,7 +169,7 @@ public class Path<V> implements Iterable<V> {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		for (V node : path) {
+		for (V node : points) {
 			result.append(node.toString() + " ");
 		}
 		return result.toString();
