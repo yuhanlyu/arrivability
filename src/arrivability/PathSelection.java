@@ -359,6 +359,32 @@ public class PathSelection {
 	 */
 	private double survivability(List<Path<Point>> paths) {
 		double sum = 0.0;
+		for (Path<Point> path1 : paths) {
+			Set<Path<Point>> otherpaths = new HashSet<>(paths);
+			otherpaths.remove(path1);
+			double sum2 = 0.0;
+			for (Path<Point> path2: otherpaths)  {
+				for (Point point1: path1) {
+					double min3 = g.vertexSet().size();
+					for (Point point2: path2) {
+						double u = g.distanceQuery(point1, point2);
+						if (u<min3) min3=u;
+					}
+					sum2+=min3/path1.size();
+				}
+			}
+			sum+=sum2/(paths.size()-1);
+		}
+		return sum/paths.size();
+	}
+	
+	/**
+	 * Compute survivability of a set of paths
+	 * @param paths
+	 * @return survivability
+	 */
+/*	private double survivability(List<Path<Point>> paths) {
+		double sum = 0.0;
 		for (Path<Point> path1 : paths) 
 			for (Point obstacle: path1)  {
 				Set<Path<Point>> otherpaths = new HashSet<>(paths);
@@ -380,7 +406,7 @@ public class PathSelection {
 				}
 			}
 		return sum/paths.size();
-	}
+	}*/
 	
 	/**
 	 * Pick k random paths

@@ -188,12 +188,12 @@ public class Benchmark extends ConsoleHandler {
 	public static void demo_NumofBlockers() {
 		// variables specific to this demo
 		int NUMBER_OF_ROBOTS = 2;
-		for (int NUMBER_OF_BLOCKERS = 1; NUMBER_OF_BLOCKERS <=2*COLUMN; NUMBER_OF_BLOCKERS+=20) {	
+		for (int NUMBER_OF_BLOCKERS = 1; NUMBER_OF_BLOCKERS <=COLUMN; NUMBER_OF_BLOCKERS+=10) {	
 			double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (100*ROW * COLUMN);
 			Benchmark bm = new Benchmark();
 			Logger.getLogger("").addHandler(bm);
 			GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
-			Graph<Point> g = GraphLoader.getGraph();
+			Graph<Point> g = GraphLoader.getGraph("files/random_map");
 //			Graph<Point> g = GraphLoader.Hanover("files/Hanover.osm", ROW, COLUMN);;
 			FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
 			MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, 0, 0, NUMBER_OF_ITERATIONS);
@@ -206,7 +206,7 @@ public class Benchmark extends ConsoleHandler {
 		
 			List<Path<Point>> paths = ma.getSolution(source, target);
 			bm.getResult();
-			String FILENAME = "demos/demo_"+NUMBER_OF_BLOCKERS+"Blockers";
+			String FILENAME = "demos/ranMap_"+NUMBER_OF_BLOCKERS+"Blkrs";
 			ResultWriter writer = new ResultWriter((GridGraph)g, model);
 			writer.write(ROW, COLUMN, source, target, paths, FILENAME);
 		}
@@ -217,10 +217,10 @@ public class Benchmark extends ConsoleHandler {
 		//demo_FixedRadius();
 		//demo_kArrivability();
 		//demo_RandomRadius_kArrivability();
-		//demo_NumofBlockers();
+		demo_NumofBlockers();
 		//demo_MakeBlockGraph();
 		
-		
+		/*
 		for (int i = 0; i < PathSelection.NUMBER_OF_MODE; i++) modeForSelection[i]=true;
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++) modeForGeneration[i]=true;
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++)
@@ -257,6 +257,6 @@ public class Benchmark extends ConsoleHandler {
 						System.out.println("Generation Method: "+i+" Selection Method: "+j);
 						System.out.println("Time = "+time[i][j][0]+" "+time[i][j][1]+" "+time[i][j][2]+" "+time[i][j][3]+" "+time[i][j][4]+" "+time[i][j][5]);
 						System.out.println("Arrivability = "+quality[i][j][0]+" "+quality[i][j][1]+" "+quality[i][j][2]);
-					}
+					}*/
 	}
 }
