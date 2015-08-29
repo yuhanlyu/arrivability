@@ -11,10 +11,22 @@ linetype = [[],[5,4],[5,4,2,4],[5,4,2,4,2,4],[2,4],[2,2]]
 linecolor = ['b','g','r','c','m','y','k','0.5']
 usecolor = 1
 
+def drawDiamond(centerx, centery,n):
+    circle = plt.Circle((centery*5,(n-centerx)*5),2,fc='r')
+    plt.gca().add_patch(circle)
+    line = plt.Line2D(((centery-2.5)*5,centery*5), ((n-centerx)*5, (n-centerx+2.5)*5), color='r',lw=1)
+    plt.gca().add_line(line)
+    line = plt.Line2D(((centery-2.5)*5,centery*5), ((n-centerx)*5, (n-centerx-2.5)*5), color='r',lw=1)
+    plt.gca().add_line(line)
+    line = plt.Line2D(((centery+2.5)*5,centery*5), ((n-centerx)*5, (n-centerx+2.5)*5), color='r',lw=1)
+    plt.gca().add_line(line)
+    line = plt.Line2D(((centery+2.5)*5,centery*5), ((n-centerx)*5, (n-centerx-2.5)*5), color='r',lw=1)
+    plt.gca().add_line(line)
+
 def main():
     plt.axes()
 
-    myfile = open('demos/demo_4-Arrivability_FixedRadius')
+    myfile = open('demos/ranMap_31Blkrs')
     
     m,n = [int(x) for x in myfile.readline().split()]
     num = int(myfile.readline().split()[0])
@@ -62,18 +74,10 @@ def main():
 
 # demonstrate failure group with radius = 2
 
-#    centerx = 2
-#    centery = 42
-#    circle = plt.Circle((centery*5,(n-centerx)*5),2,fc='r')
-#    plt.gca().add_patch(circle)
-#    line = plt.Line2D(((centery-2.4)*5,centery*5), ((n-centerx)*5, (n-centerx+2.4)*5), color='r',lw=2)
-#    plt.gca().add_line(line)
-#    line = plt.Line2D(((centery-2.4)*5,centery*5), ((n-centerx)*5, (n-centerx-2.4)*5), color='r',lw=2)
-#    plt.gca().add_line(line)
-#    line = plt.Line2D(((centery+2.4)*5,centery*5), ((n-centerx)*5, (n-centerx+2.4)*5), color='r',lw=2)
-#    plt.gca().add_line(line)
-#    line = plt.Line2D(((centery+2.4)*5,centery*5), ((n-centerx)*5, (n-centerx-2.4)*5), color='r',lw=2)
-#    plt.gca().add_line(line)
+#    drawDiamond(2, 42,n)
+#    drawDiamond(2, 40,n)
+#    drawDiamond(2, 20,n)
+#    drawDiamond(2, 10,n)
 
     plt.axis('off')
     plt.axis('scaled')
@@ -95,15 +99,15 @@ def main():
         verts = []
         for j in range(sides):
             nx, ny = [int(x) for x in myobstaclef.readline().split()]
+        # calibration for block graph
+        # verts.append((ny*5-1.5,(n-nx+5)*5))
             verts.append((ny*5,(n-nx)*5))
         verts.append(verts[0])
         path = Path(verts,codes)
-#        fig = plt.figure()
-#ax = fig.add_subplot(111)
         patch = patches.PathPatch(path, facecolor='#D24905', lw=2)
         plt.gca().add_patch(patch)
 
-    plt.savefig('4-Arrivability_FixedRadius.pdf', transparent = True)
+    plt.savefig('demos/ranMap_41Blkrs.pdf', transparent = True)
     plt.show()
 
 if __name__ == '__main__':
