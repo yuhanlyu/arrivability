@@ -23,7 +23,7 @@ public class PathGeneration {
 	public static final int RANDOM = 0;
 	public static final int REWEIGHT = 1;
 	public static final int NUMBER_OF_MODE = 2;
-	private Random rand = new Random(100);
+	private Random rand = new Random();
 	
 	/**
 	 * Constructor

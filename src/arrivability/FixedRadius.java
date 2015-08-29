@@ -117,7 +117,7 @@ public class FixedRadius extends FailureRate {
     	int n = forbiddenAreas.size(), k = request;
     	List<Collection<Point>> areas = new ArrayList<>();
     	// Gosper's hack
-    	for (int comb = (1 << k) - 1; comb < 1 << n;) {
+    	for (int comb = (1 << k) - 1; comb < (1 << n);) {
     		Collection<Point> forbiddenArea = new HashSet<>();
     		for (int i = 0; i < n; ++i) {
     			if (((comb >> i) & 1) == 1)

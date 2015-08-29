@@ -235,7 +235,7 @@ public class Benchmark extends ConsoleHandler {
 						MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, i, j, NUMBER_OF_ITERATIONS);
 						Point source = new Point(ROW / 2, 0);
 						Point target = new Point(ROW / 2, COLUMN - 1);
-					
+						System.gc();
 						List<Path<Point>> solution=ma.getSolution(source, target);
 						bm.getResult();
 						time[i][j][0]=generationTime;

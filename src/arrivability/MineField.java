@@ -32,25 +32,24 @@ public class MineField extends Application {
     private Group edges = new Group();
 	
 	// For drawing circles
-	public static final int ROW = 50;
-	public static final int COLUMN = 50;
+	public static final int ROW = 7;
+	public static final int COLUMN = 7;
 	private static final int RADIUS = 1;
 	private static final int SHIFT = 20;
-	private static final int SEPARATION = 5;
+	private static final int SEPARATION = 20;
 
 	// For arrivability model
 	public static final int MINE_RADIUS = 1;
 	private static final double NUMBER_OF_BLOCKERS = 1;
 	private static final double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	
-	private static final int NUMBER_OF_ROBOTS = 3;
+	private static final int NUMBER_OF_ROBOTS = 2;
 	private static final int NUMBER_OF_REQUEST = 1;
 	private static final int NUMBER_OF_GENERATE = 100;
 	private static final int NUMBER_OF_ITERATIONS = 3;
 	private static final int genMode = 0;
 	private static final int selMode = 0;
 	
-		
 	// For fixed radius model
 	//private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
 	//private Graph<Point> g = GraphLoader.getGraph();
@@ -73,18 +72,26 @@ public class MineField extends Application {
 	//private Point target = new Point(35, 35);
 	
 	// For random map
-	//private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
-	//private Graph<Point> g = GraphLoader.getGraph("files/random_map");
-	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
-	//private Point source = new Point(ROW / 2, 0);
-	//private Point target = new Point(ROW / 2, COLUMN - 1);
+	// private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
+	// private Graph<Point> g = GraphLoader.getGraph("files/random_map");
+	// private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	// private Point source = new Point(ROW / 2, 0);
+	// private Point target = new Point(ROW / 2, COLUMN - 1);
 	
 	// For Hanover map
-	private Graph<Point> g = GraphLoader.Hanover("files/Hanover.osm", 100, 100);
-	private GridFailureGroup fg = new GridFailureGroup(100, 100, MINE_RADIUS);
+	//private Graph<Point> g = GraphLoader.Hanover("files/Hanover.osm", 100, 100);
+	//private GridFailureGroup fg = new GridFailureGroup(100, 100, MINE_RADIUS);
+	//private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	//private Point source = new Point(28, 68);
+	//private Point target = new Point(65, 40);
+	
+	// For complete algorithm 
+	private GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
+	private Graph<Point> g = GraphLoader.getGraph();
 	private FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
-	private Point source = new Point(28, 68);
-	private Point target = new Point(65, 40);
+	private Point source = new Point(ROW / 2, 0);
+	private Point target = new Point(ROW / 2, COLUMN - 1);
+	private FailureMinimizer minimizer = new FailureMinimizer((FixedRadius)model, 2, 1, source, target);
 	
 	private Map<Point, Circle> pointToCircle = new LinkedHashMap<>();
 	private Map<Circle, Point> circleToPoint = new LinkedHashMap<>();
@@ -244,7 +251,6 @@ public class MineField extends Application {
 					System.out.println("Computing");
 					//MaximizeArrivability maximizer = new MaximizeArrivability(model, 2, 1, source, target);
 					//drawPaths(maximizer.getSolution(MAX_UNION));
-					FailureMinimizer minimizer = new FailureMinimizer((FixedRadius)model, 2, 1, source, target);
 					drawPaths(minimizer.getSolution());
 				} catch (Exception e) {
 					e.printStackTrace();

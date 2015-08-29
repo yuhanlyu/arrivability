@@ -65,7 +65,7 @@ public class PathSelection {
 	 */
 	public List<Path<Point>> select(List<Path<Point>> candidates, int numberOfRobots, int numberOfRequest) {
 		long startTime = System.nanoTime();
-		List<Path<Point>> sols = initialSolution(candidates, numberOfRobots);
+		List<Path<Point>> sols = initialSolution(candidates, numberOfRobots, numberOfRequest);
 		long initialTime = System.nanoTime();
 		logger.info("Initial solution takes " + (initialTime - startTime) / 1000000 + " milliseconds");
 		distanceMap = Collections.synchronizedMap(new LinkedHashMap<Path<Point>, Map<Path<Point>, Double>>() {
@@ -88,7 +88,7 @@ public class PathSelection {
 	 * @param numberOfRobots number of robots
 	 * @return an initial solution
 	 */
-	private List<Path<Point>> initialSolution(List<Path<Point>> candidates, int numberOfRobots) {
+	private List<Path<Point>> initialSolution(List<Path<Point>> candidates, int numberOfRobots, int numberOfRequest) {
 		switch (mode) {
 			case MAX_SUM: 
 				return maxObj(candidates, numberOfRobots, this::sumDistance);
@@ -101,7 +101,9 @@ public class PathSelection {
 			case FIRST_K:
 				return firstK(candidates, numberOfRobots);
 			case OPTIMAL:
-				return optObj(candidates, numberOfRobots, this::sumDistance);
+				return optObj(candidates, numberOfRobots, solution -> {
+					return fr.arrivability(solution, numberOfRequest);
+				});
 			case RANDOM:
 				return ranObj(candidates, numberOfRobots);
 		}
