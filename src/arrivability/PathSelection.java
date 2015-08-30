@@ -26,13 +26,15 @@ import java.util.stream.IntStream;
 public class PathSelection {
 	
 	public static final int OPTIMAL = 0;
-	public static final int MAX_MIN = 1;
-	public static final int MAX_NEAREST = 2;
-	public static final int MAX_SURVIVABILITY = 3;
-	public static final int FIRST_K = 4;
-	public static final int MAX_SUM = 5;
-	public static final int RANDOM = 6;
+	public static final int RANDOM = 1;
+	public static final int MAX_SUM = 2;
+	public static final int MAX_MIN = 3;
+	public static final int MAX_NEAREST = 4;
+	public static final int MAX_SURVIVABILITY = 5;
+	public static final int FIRST_K = 6;
 	public static final int NUMBER_OF_MODE = 7;
+	
+	public static final String names[] = {"Optimal", "Random", "Remote clique", "Remote edge", "Remote pseudoforest", "Survivability", "First n"};
 	
 	private static final Logger logger = Logger.getLogger(PathSelection.class.getName());
 	private static final int CACHE_SIZE = 100000;
