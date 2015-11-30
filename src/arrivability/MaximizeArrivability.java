@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 public class MaximizeArrivability {
 
 	private static final Logger logger = Logger.getLogger(MaximizeArrivability.class.getName());
+	public static final double EPSILON = 1e-7;
 	private int numberOfRobots;
 	private int numberOfRequest;
 	private int numberOfGeneratedPaths;

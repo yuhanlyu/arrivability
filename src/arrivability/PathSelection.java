@@ -177,7 +177,7 @@ public class PathSelection {
 	 * @param initial an initial solution
 	 * @param candidates all candidates
 	 * @param objective objective function
-	 * @return true if improved, flase otherwise
+	 * @return true if improved, false otherwise
 	 */
 	private static boolean increase(List<Path<Point>> initial, List<Path<Point>> candidates, 
 			Function<List<Path<Point>>, Double> objective) {
@@ -195,9 +195,17 @@ public class PathSelection {
 			}
 			return new Result(obj, i, index);
 		}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
-		
-		if (result.sum > objective.apply(initial)) {
-			initial.set(result.removeIndex, candidates.get(result.newIndex));
+		//System.out.println(result.sum + " " + objective.apply(initial));
+		if (result.sum > objective.apply(initial) + MaximizeArrivability.EPSILON) {
+			//System.out.println(result.removeIndex + " " + result.newIndex);
+			List<Path<Point>> solution = Path.clonePaths(initial);
+			solution.set(result.removeIndex, candidates.get(result.newIndex));
+			//System.out.println("Mid: " + result.sum + " " + objective.apply(solution));
+			//initial.set(result.removeIndex, candidates.get(result.newIndex));
+			for (int i = 0; i < solution.size(); ++i)
+				initial.set(i, solution.get(i));
+			assert(objective.apply(initial) > result.sum - MaximizeArrivability.EPSILON);
+			//System.out.println("After: " + result.sum + " " + objective.apply(initial));
 			return true;
 		}
 		return false;
@@ -237,8 +245,7 @@ public class PathSelection {
 			}
 			return new Result(obj, i, index);
 		}).collect(Collectors.maxBy((a, b) -> Double.compare(a.sum, b.sum))).get();
-		
-		if (result.sum > fr.arrivability(initial, numberOfRequest)) {
+		if (result.sum > fr.arrivability(initial, numberOfRequest) + MaximizeArrivability.EPSILON) {
 			initial.set(result.removeIndex, candidates.get(result.newIndex));
 			return true;
 		}
@@ -363,23 +370,27 @@ public class PathSelection {
 	 */
 	private double survivability(List<Path<Point>> paths) {
 		double sum = 0.0;
+		List<Path<Point>> otherpaths = new ArrayList<>(paths.size() - 1);
 		for (Path<Point> path1 : paths) {
-			Set<Path<Point>> otherpaths = new HashSet<>(paths);
-			otherpaths.remove(path1);
+			otherpaths.clear();
+			for (Path<Point> path : paths)
+				if (path != path1)
+					otherpaths.add(path);
 			double sum2 = 0.0;
 			for (Path<Point> path2: otherpaths)  {
 				for (Point point1: path1) {
-					double min3 = g.vertexSet().size();
+					double min3 = Double.POSITIVE_INFINITY;
 					for (Point point2: path2) {
 						double u = g.distanceQuery(point1, point2);
-						if (u<min3) min3=u;
+						if (u < min3) 
+							min3 = u;
 					}
-					sum2+=min3/path1.size();
+					sum2 += min3 / path1.size();
 				}
 			}
-			sum+=sum2/(paths.size()-1);
+			sum += sum2 / (paths.size() - 1);
 		}
-		return sum/paths.size();
+		return sum / paths.size();
 	}
 	
 	/**

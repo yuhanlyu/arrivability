@@ -10,14 +10,14 @@ public class Benchmark extends ConsoleHandler {
 	
 	private static int ROW = 50;
 	private static int COLUMN = 50;
-	private static int NUMBER_OF_BLOCKERS = 10;
+	private static int NUMBER_OF_BLOCKERS = 5;
 	private static double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
-	private static int MINE_RADIUS = 1;
-	private static int NUMBER_OF_ROBOTS = 3;
-	private static int NUMBER_OF_REQUEST = 1;
-	private static int NUMBER_OF_GENERATE = 100;
+	private static int MINE_RADIUS = 5;
+	private static int NUMBER_OF_ROBOTS = 5;
+	private static int NUMBER_OF_REQUEST = 4;
+	private static int NUMBER_OF_GENERATE = 50;
 	private static int NUMBER_OF_ITERATIONS = 3;
-	private static int NUMBER_OF_TEST = 10;
+	private static int NUMBER_OF_TEST = 3;
 	
 	private static boolean[] modeForSelection = new boolean[PathSelection.NUMBER_OF_MODE];
 	private static boolean[] modeForGeneration = new boolean[PathGeneration.NUMBER_OF_MODE];
@@ -75,9 +75,7 @@ public class Benchmark extends ConsoleHandler {
 		//int ROW = 30;
 		//int COLUMN = 30;
 		//int NUMBER_OF_BLOCKERS = 2;
-		int NUMBER_OF_ROBOTS = 2;
 		double FAILURE_PROBABILITY = (double)0.1 / (ROW * COLUMN);
-		int MINE_RADIUS = 5;
 		
 		Benchmark bm = new Benchmark();
 	    Logger.getLogger("").addHandler(bm);
@@ -97,12 +95,7 @@ public class Benchmark extends ConsoleHandler {
 	
 	public static void demo_FixedRadius() {
 	    // variables specific to this demo
-		//int ROW = 30;
-		//int COLUMN = 30;
-		//int NUMBER_OF_BLOCKERS = 2;
-		int NUMBER_OF_ROBOTS = 2;
 		double FAILURE_PROBABILITY = (double)0.1 / (ROW * COLUMN);
-		int MINE_RADIUS = 5;
 		
 		Benchmark bm = new Benchmark();
 	    Logger.getLogger("").addHandler(bm);
@@ -224,6 +217,9 @@ public class Benchmark extends ConsoleHandler {
 		for (int i = 0; i < PathSelection.NUMBER_OF_MODE; i++) modeForSelection[i]=true;
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++) modeForGeneration[i]=true;
 		
+		modeForSelection[PathSelection.OPTIMAL] = false;
+		
+		/*
 		// Trigger JIT
 		{
 			Benchmark bm = new Benchmark();
@@ -231,17 +227,18 @@ public class Benchmark extends ConsoleHandler {
 			GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
 			Graph<Point> g = GraphLoader.getGraph("files/random_map");
 			FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
-			MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, 0, 0, NUMBER_OF_ITERATIONS);
+			MaximizeArrivability ma = new MaximizeArrivability(g, model, NUMBER_OF_ROBOTS, NUMBER_OF_REQUEST, NUMBER_OF_GENERATE, 0, 1, NUMBER_OF_ITERATIONS);
 			Point source = new Point(ROW / 2, 0);
 			Point target = new Point(ROW / 2, COLUMN - 1);
 			System.gc();
 			List<Path<Point>> solution=ma.getSolution(source, target);
-		}
+		}*/
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++)
-			if (modeForGeneration[i]==true)
+			if (modeForGeneration[i] == true)
 				for (int j = 0; j < PathSelection.NUMBER_OF_MODE; j++)
-					if (modeForSelection[j]==true) {
+					if (modeForSelection[j] == true) {
 						for (int k = 0; k < NUMBER_OF_TEST; ++k) {
+							System.out.println(i + " " + j + " " + k);
 							Benchmark bm = new Benchmark();
 							Logger.getLogger("").addHandler(bm);
 							GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);

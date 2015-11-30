@@ -27,7 +27,7 @@ public class Path<V> implements Iterable<V> {
 	 */
 	public Path(Collection<V> arg_path) {
 		for (V point : arg_path)
-			this.addVertex(point);
+			addVertex(point);
 	}
 	
 	/**
@@ -65,22 +65,16 @@ public class Path<V> implements Iterable<V> {
 	 * @return a collection containing all elements in path
 	 */
 	public Collection<V> toCollection() {
-		return path;
+		return points;
 	}
 	
 	/**
-	 * Duplicate the current path
+	 * Clone the current path
 	 * @return a duplicated path
 	 */
-	public Path<V> duplicate() {
+	@Override
+	public Path<V> clone() {
 		return new Path<>(points);
-	}
-	
-	/**
-	 * Clear all information
-	 */
-	public void clear() {
-		path.clear();
 	}
 	
 	/**
@@ -133,10 +127,12 @@ public class Path<V> implements Iterable<V> {
 	 * @return a duplication of the input paths
 	 */
 	public static List<Path<Point>> clonePaths(List<Path<Point>> paths) {
+		return new ArrayList(paths);
+		/* Why does not work?
 		Path<Point>[] duplicates = new Path[paths.size()];
 		for (int i = 0; i < paths.size(); ++i)
-			duplicates[i] = paths.get(i).duplicate();
-		return Arrays.asList(duplicates);
+			duplicates[i] = paths.get(i).clone();
+		return Arrays.asList(duplicates);*/
 	}
 	
 	/*
