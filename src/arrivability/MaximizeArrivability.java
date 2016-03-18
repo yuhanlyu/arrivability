@@ -58,4 +58,21 @@ public class MaximizeArrivability {
     	logger.info("Search completed in " + duration + " milliseconds");    	
     	return improved;
 	}
+	
+	/**
+     * Get solution
+     * @param source source point
+     * @param target target point
+     * @return a list of paths
+     */
+    public List<Path<Point>> getSolution(Point source, Point target, List<Path<Point>> solution) {
+        logger.info("Start to find an optimal solution");
+        long startTime = System.nanoTime();
+        List<Path<Point>> improved = pi.improve(solution, pg, numberOfRequest, numberOfIteration);
+        long endTime = System.nanoTime();
+        logger.info("Path improvement takes " + (endTime - startTime) / 1000000 + " milliseconds");
+        long duration = (endTime - startTime) / 1000000;
+        logger.info("Search completed in " + duration + " milliseconds");       
+        return improved;
+    }
 }

@@ -1,5 +1,6 @@
 package arrivability;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.ConsoleHandler;
@@ -14,10 +15,10 @@ public class Benchmark extends ConsoleHandler {
 	private static double FAILURE_PROBABILITY = (double)NUMBER_OF_BLOCKERS / (ROW * COLUMN);
 	private static int MINE_RADIUS = 5;
 	private static int NUMBER_OF_ROBOTS = 5;
-	private static int NUMBER_OF_REQUEST = 4;
+	private static int NUMBER_OF_REQUEST = 5;
 	private static int NUMBER_OF_GENERATE = 50;
 	private static int NUMBER_OF_ITERATIONS = 3;
-	private static int NUMBER_OF_TEST = 3;
+	private static int NUMBER_OF_TEST = 10;
 	
 	private static boolean[] modeForSelection = new boolean[PathSelection.NUMBER_OF_MODE];
 	private static boolean[] modeForGeneration = new boolean[PathGeneration.NUMBER_OF_MODE];
@@ -206,6 +207,63 @@ public class Benchmark extends ConsoleHandler {
 		}
 	}
 	
+	public static void testReduction() {
+	    double[] time1 = new double[NUMBER_OF_TEST];
+	    double[] time2 = new double[NUMBER_OF_TEST];
+	    double[] arrivability1 = new double[NUMBER_OF_TEST];
+	    double[] arrivability2 = new double[NUMBER_OF_TEST];
+	    for (int i = 0; i < NUMBER_OF_TEST; ++i) {
+	        Benchmark bm = new Benchmark();
+	        Logger.getLogger("").addHandler(bm);
+	        GridFailureGroup fg = new GridFailureGroup(ROW, COLUMN, MINE_RADIUS);
+	        Graph<Point> g = GraphLoader.getGraph("files/random_map");
+	        FailureRate model = new FixedRadius(fg, g, FAILURE_PROBABILITY);
+	        MaximizeArrivability ma = new MaximizeArrivability(g, model, 3, 1, NUMBER_OF_GENERATE, PathGeneration.RANDOM, PathSelection.RANDOM, NUMBER_OF_ITERATIONS);
+	        Point source = new Point(ROW / 2, 0);
+	        Point target = new Point(ROW / 2, COLUMN - 1);
+	        System.gc();
+	        long before = System.nanoTime();
+	        List<Path<Point>> solution = ma.getSolution(source, target);
+	        System.out.println("1-survivability is " + model.arrivability(solution, 1));
+	        List<Path<Point>> solution2 = new ArrayList<>();
+	        solution2.add(solution.get(0).clone());
+	        solution2.add(solution.get(0).clone());
+	        solution2.add(solution.get(1).clone());
+	        solution2.add(solution.get(1).clone());
+	        solution2.add(solution.get(2).clone());
+	        System.out.println("2-survivability is " + model.arrivability(solution2, 2));
+	        ma = new MaximizeArrivability(g, model, 5, 2, NUMBER_OF_GENERATE, PathGeneration.RANDOM, PathSelection.RANDOM, NUMBER_OF_ITERATIONS);
+	        solution2 = ma.getSolution(source, target, solution2);
+	        double duration = (System.nanoTime() - before) / 1000000.0;
+	        time1[i] = duration;
+	        arrivability1[i] = model.arrivability(solution2, 2);
+	        System.out.println("Improved 2-survivability is " + model.arrivability(solution2, 2));
+	        before = System.nanoTime();
+	        List<Path<Point>> solution3 = ma.getSolution(source, target);
+	        duration = (System.nanoTime() - before) / 1000000.0;
+	        time2[i] = duration;
+	        arrivability2[i] = model.arrivability(solution3, 2);
+	        System.out.println("Naive 2-survivability is " + model.arrivability(solution3, 2));
+	    }
+	    double avgAv = 0.0, avgTime = 0.0;
+	    for (int i = 0; i < NUMBER_OF_TEST; ++i) {
+	        avgAv += arrivability1[i];
+	        avgTime += time1[i];
+	    }
+	    avgAv /= NUMBER_OF_TEST;
+	    avgTime /= NUMBER_OF_TEST;
+	    System.out.println(String.format("Reduced: survivability %f time %f", avgAv, avgTime));
+	    avgAv = 0.0;
+	    avgTime = 0.0;
+	    for (int i = 0; i < NUMBER_OF_TEST; ++i) {
+            avgAv += arrivability2[i];
+            avgTime += time2[i];
+        }
+	    avgAv /= NUMBER_OF_TEST;
+        avgTime /= NUMBER_OF_TEST;
+	    System.out.println(String.format("Original: survivability %f time %f", avgAv, avgTime));
+	}
+	
 	public static void main( String[] args ) {
 		//demo_RandomRadius();
 		//demo_FixedRadius();
@@ -213,13 +271,13 @@ public class Benchmark extends ConsoleHandler {
 		//demo_RandomRadius_kArrivability();
 		//demo_NumofBlockers();
 		//demo_MakeBlockGraph();
-		
+	    testReduction();
+		/*
 		for (int i = 0; i < PathSelection.NUMBER_OF_MODE; i++) modeForSelection[i]=true;
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++) modeForGeneration[i]=true;
 		
 		modeForSelection[PathSelection.OPTIMAL] = false;
 		
-		/*
 		// Trigger JIT
 		{
 			Benchmark bm = new Benchmark();
@@ -232,7 +290,7 @@ public class Benchmark extends ConsoleHandler {
 			Point target = new Point(ROW / 2, COLUMN - 1);
 			System.gc();
 			List<Path<Point>> solution=ma.getSolution(source, target);
-		}*/
+		}
 		for (int i = 0; i < PathGeneration.NUMBER_OF_MODE; i++)
 			if (modeForGeneration[i] == true)
 				for (int j = 0; j < PathSelection.NUMBER_OF_MODE; j++)
@@ -280,5 +338,6 @@ public class Benchmark extends ConsoleHandler {
 						System.out.println("Time = "+time[i][j][0]+" "+time[i][j][1]+" "+time[i][j][2]+" "+time[i][j][3]+" "+time[i][j][4]+" "+time[i][j][5]);
 						System.out.println("Arrivability = "+quality[i][j][0]+" "+quality[i][j][1]+" "+quality[i][j][2]);
 					}
+					*/
 	}
 }

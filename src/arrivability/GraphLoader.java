@@ -245,6 +245,7 @@ public class GraphLoader {
 				minlat = p.getY();
 		}
 		double xFactor = numberOfColumns / (maxlon - minlon), yFactor = numberOfRows / (maxlat - minlat);
+		//double xFactor = 10 / (maxlon - minlon), yFactor = 10 / (maxlat - minlat);
 		Map<Long, Point> vertexMap = new HashMap<>();
 		// Latitude ~ y ~ row
 		// Longitude ~ x ~ column
@@ -252,17 +253,27 @@ public class GraphLoader {
 		for (Long id : nodeMap.keySet()) {
 			Point2D.Double p = nodeMap.get(id);
 			Point point = new Point((maxlat - p.getY()) * yFactor, (p.getX() - minlon) * xFactor);
+			//Point point = new Point((p.getX() - minlon) * xFactor, (p.getY() - minlat) * yFactor);
 			vertexMap.put(id, point);
 		}
 		// Construct all obstacles in terms of row and columns
 		Area blocked = new Area();
+		System.out.println(buildings.size());
 		for (List<Long> building : buildings) {
 			Path2D.Double obstacle = new Path2D.Double();
+			//List<Point2D.Double> path = new ArrayList<>();
 			obstacle.moveTo(vertexMap.get(building.get(0)).getX(), vertexMap.get(building.get(0)).getY());
+			//path.add(new Point2D.Double(vertexMap.get(building.get(0)).getX(), vertexMap.get(building.get(0)).getY()));
 			for (int i = 1; i < building.size(); ++i) {
-				obstacle.lineTo(vertexMap.get(building.get(i)).getX(), vertexMap.get(building.get(i)).getY());	
+				obstacle.lineTo(vertexMap.get(building.get(i)).getX(), vertexMap.get(building.get(i)).getY());
+				//path.add(new Point2D.Double(vertexMap.get(building.get(i)).getX(), vertexMap.get(building.get(i)).getY()));
 			}
+			obstacle.closePath();
 			blocked.add(new Area(obstacle));
+			//System.out.println(path.size());
+			//for (Point2D.Double p : path) {
+			//    System.out.println(String.format("%f %f", p.getX() - 5, p.getY() - 5));
+			//}
 		}
 		GridGraph g = new GridGraph(numberOfRows, numberOfColumns);
 		for (int i = 0; i < numberOfRows; ++i) {
